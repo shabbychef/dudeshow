@@ -1,0 +1,179 @@
+% * Wed May 09 2012 15:25:43 Steven E. Pav <steven@cerebellumcapital.com>
+%
+% just the 2-window MAC overfit stuff;
+%
+
+<<'preamble',echo=FALSE,print=FALSE,warning=FALSE,message=FALSE>>=
+source("knitr_opts.R")
+source("defs.R")
+
+# compiler flags!
+
+FINAL.VERSION <- TRUE
+@
+
+% MAC fit stuff%FOLDUP
+<<'macfit',echo=FALSE,print=FALSE>>=
+library(TTR)
+
+ary.tstat <- function(rets,co.dim) {
+	dof <- apply(!is.na(rets),co.dim,sum)
+	return(sqrt(dof) * apply(rets,co.dim,mean,na.rm=TRUE) /
+				 apply(rets,co.dim,stats::sd,na.rm=TRUE))
+}
+
+# backtest them all, put in an array. ouchies#FOLDUP
+mac.bt.all <- function(xlv,w1s,w2s) {
+	n.per <- length(xlv)
+	delx <- diff(log(xlv))
+	outs <- array(dim=c(n.per-1,length(w1s),length(w2s))) 
+	for (iii in 1:(length(w1s))) {
+		av.1 <- SMA(xlv,w1s[iii])
+		for (jjj in 1:(length(w2s))) {
+			av.2 <- SMA(xlv,w2s[jjj])
+			tr.sign <- sign(av.1 - av.2)
+			rets <- tr.sign[1:(n.per-1)] * delx
+			outs[,iii,jjj] <- rets
+		}
+	}
+	return(outs)
+}#UNFOLD
+
+# backtest them all, collect stats.#FOLDUP
+mac.bt.stats <- function(xlv,w1s,w2s) {
+	outs <- mac.bt.all(xlv,w1s,w2s)
+	maxn <- max(c(max(w1s),max(w2s)))
+	# cut out a bunch, so there are no NA left
+	outs <- outs[(1+maxn):dim(outs)[1],,]
+
+	t.stats <- ary.tstat(outs,c(2,3))
+	return(list(ts=t.stats))
+}#UNFOLD
+
+# backtest them all, return max stats.#FOLDUP
+mac.bt.max.stats <- function(xlv,w1s,w2s) {
+	bts <- mac.bt.stats(xlv,w1s,w2s)
+	return(list(ts=max(bts$ts),
+							ats=max(abs(bts$ts))))
+}#UNFOLD
+
+# apply to random data#FOLDUP
+mac.rand.bt <- function(n.per,w1s,w2s) {
+	maxn <- max(c(max(w1s),max(w2s)))
+	return(mac.bt.max.stats(exp(cumsum(0.05 * rnorm(n.per + maxn))),w1s,w2s))
+}#UNFOLD
+
+# plot function definitions#FOLDUP
+my.qqplot <- function(thry,emp) {
+	qqplot(thry,emp,xlab="Theoretical Quantiles",ylab="Empirical Quantiles")
+	abline(a=0,b=1)
+}
+
+F.qqplot <- function(isit.F,n,p,ncp=0,nsamp=2048) {
+	thry <- rf(n=nsamp,df1=p,df2=n-p,ncp=ncp)
+	my.qqplot(thry,isit.F)
+}
+
+T2.qqplot <- function(T2,n,p,...) {
+	F.qqplot(f_hot2F(T2,p,n),n=n,p=p,...)
+}
+#UNFOLD
+
+set.seed(152345)
+
+nday <- ifelse(FINAL.VERSION,2500,512)
+ntrial <- ifelse(FINAL.VERSION,1024,32)
+# this idiom don't work. R vectorizes ifelse
+#w1 <- ifelse(FINAL.VERSION,c(4,8,12,16,20,24,28,32,36),c(4,12,20,28,36))
+#w2 <- ifelse(FINAL.VERSION,c(40,80,120,160,200,240,280),c(40,120,200,280))
+if (FINAL.VERSION) {
+	w1 <- c(4,8,12,16,20,24,28,32,36)
+	w2 <- c(40,80,120,160,200,240,280)
+} else {
+	w1 <- c(4,12,20,28,36)
+	w2 <- c(40,120,200,280)
+}
+
+trials <- replicate(ntrial,mac.rand.bt(nday,w1,w2))
+
+max.ts <- sort(unlist(trials[1,]))
+max.hot <- max.ts^2
+
+## find the best p#FOLDUP
+check.p <- seq(from=1.45,to=3.0,by=0.025)
+# prealloc
+llik <- matrix(nrow=length(check.p),ncol=1)
+ks.p <- matrix(nrow=length(check.p),ncol=1)
+divs <- matrix(nrow=length(check.p),ncol=1)
+dits <- matrix(nrow=length(check.p),ncol=1)
+for (iii in 1:(length(check.p))) {
+	eq.p <- check.p[iii]
+	max.F <- f_hot2F(max.hot,eq.p,nday)
+	llik[iii] <- sum(df(max.F,df1=eq.p,df2=nday-eq.p,ncp=0,log=TRUE),na.rm=TRUE)
+
+	kt <- ks.test(max.F,"pf",eq.p,nday-eq.p,0)
+	ks.p[iii] <- kt$p.value
+
+	#sort.F <- sort(max.F)
+	sort.F <- max.F
+	pvs <- ((1/6) + (1:length(sort.F))) / ((1/3) + length(sort.F))
+	qs <- qf(pvs,df1=eq.p,df2=nday-eq.p,ncp=0)
+
+	divs[iii] <- max(abs(qs - sort.F))
+
+	thry.ts <- sqrt(f_F2hot(qs,p=eq.p,n=nday))
+	dits[iii] <- max(abs(thry.ts - max.ts))
+}
+
+maxp.llik <- check.p[which.max(llik)]
+maxp.ks.p <- check.p[which.max(ks.p)]
+maxp.divs <- check.p[which.min(divs)]
+maxp.dits <- check.p[which.min(dits)]
+
+# choose the Kolmogorov-Smirnov one.
+apx.p <- maxp.ks.p
+#UNFOLD
+
+# test it on SPY
+SPY.test <- GSPC[,"GSPC.Adjusted"]
+SPY.rets <- rel.returns(SPY.test)
+SPY.rets <- SPY.rets["2000-01-01::2010-01-01",]
+
+SPY.macstats <- mac.bt.max.stats(exp(cumsum(SPY.rets)),w1,w2)
+SPY.hot <- SPY.macstats$ts^2
+SPY.sr <- SPY.macstats$ts / sqrt(length(SPY.rets))
+SPY.ci <- srstarncp.ci(SPY.sr,p=apx.p,n=length(SPY.rets),alpha.lo=0.025)
+SPY.mle <- srstarncp.mle(SPY.sr,p=apx.p,n=length(SPY.rets))
+
+SPY.n <- length(SPY.rets)
+SPY.TEO1 <- time(SPY.rets[1])
+SPY.TEOf <- time(SPY.rets[length(SPY.rets)])
+
+@
+%UNFOLD
+
+\begin{frame}{Overfit of Simple 2-Window MAC}%FOLDUP
+<<'macfitz',include=FALSE,fig=TRUE,dev=c("cairo_ps","pdf")>>=
+set.seed(2178)
+T2.qqplot(max.hot,n=nday,p=apx.p,ncp=0,nsamp=2048)
+@
+\vspace{-0.35in}
+\begin{figure}[htbp]
+  \begin{center}
+		\includegraphics[width=1.95in]{figure/macfitz.eps}
+		\caption{\Sexpr{ntrial} Monte Carlo sims of model selection in 2-window MAC over \Sexpr{nday} days, 
+			under the null (no population drift or autocorrelation).  In-sample \ssr[*] values transformed to 
+			F-statistics with $\nlatf=\Sexpr{apx.p}$.}
+		\label{fig:appxmac}
+	\end{center}
+\end{figure}
+\vspace{-0.25in}
+Use on \texttt{GSPC} adjusted returns (\Sexpr{SPY.TEO1} to \Sexpr{SPY.TEOf}, \Sexpr{SPY.n} days), 
+MLE of \psr[*] is
+$\Sexpr{signif(sqrt(dpy) * SPY.mle,digits=2)}\yrto{-1/2}$; 95\% CI is
+$\wrapNeParens{\Sexpr{signif(sqrt(dpy) * SPY.ci$lo,digits=2)}\yrto{-1/2},\Sexpr{signif(sqrt(dpy) * SPY.ci$hi,digits=2)}\yrto{-1/2}}$.
+\end{frame}
+%UNFOLD
+
+%for vim modeline: (do not edit)
+% vim:ts=2:sw=2:tw=79:fdm=marker:fmr=FOLDUP,UNFOLD:cms=%%s:syn=rnoweb:ft=rnoweb:ai:si:cin:nu:fo=croql:cino=p0t0c5(0:

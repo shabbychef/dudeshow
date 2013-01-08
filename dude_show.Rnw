@@ -1,0 +1,609 @@
+\documentclass{beamer}
+\mode<presentation>{ \usetheme{Pittsburgh}\usecolortheme{seahorse}\setbeamertemplate{blocks}[rounded][shadow=TRUE] }
+%\mode<presentation>{ \usetheme{boxes} }
+
+% for help on beamer, see e.g.
+% http://heather.cs.ucdavis.edu/~matloff/beamer.html
+% wget http://heather.cs.ucdavis.edu/~matloff/BeamerTour.tex
+%
+% beamer with 2-page sweave & code:
+% http://stackoverflow.com/questions/6964750/two-column-beamer-sweave-slide-with-grid-graphic
+
+
+<<'preamble',echo=FALSE,print=FALSE,warning=FALSE,message=FALSE>>=
+source("knitr_opts.R")
+source("defs.R")
+
+# compiler flags!
+
+#FINAL.VERSION <- TRUE
+FINAL.VERSION <- FALSE
+
+# not used yet
+LONG.FORM <- FALSE
+@
+
+
+%2FIX: put a header here.
+
+\typeout{-- dude.tex}
+\typeout{-- NC 2011-2012 s.e.p.}
+\typeout{-- SVNId: $Id: proj_name.tex 89 2011-01-26 20:59:08Z astrawman $}
+
+%TODO
+% longer SPY history; include 87 crash
+
+%preamble%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%FOLDUP
+
+%to make wikipedia bibtex entries happy
+\usepackage{url}
+
+%\usepackage{psfig}\psfull
+%\usepackage{graphicx,epsfig,psfrag}
+\usepackage{graphicx}
+\usepackage{subfigure}
+%\graphicspath{{figs/}}
+\newcommand{\useBW}{.bw}
+\newcommand{\figDIR}{figs}
+
+%for pretty printing code;
+\usepackage{listings}
+
+\lstset{frame=topline,float=tbph,tabsize=2,numbers=left}
+
+
+\usepackage[today,nofancy]{svninfo}
+\svnInfo $Id: dude.Rnw 01 2012-05-11 20:59:08Z astrawman $
+
+%\usepackage{alg}
+%\floatstyle{boxed}
+%\floatstyle{ruled}
+%\restylefloat{algorithmfloat}
+%\usepackage{empheq}
+%\providecommand{\widefbox}[1]{\fbox{\hspace{1em}{#1}\hspace{1em}}}
+
+%compactitem and such:
+\usepackage[newitem,newenum,increaseonly]{paralist}
+%importing:
+%\usepackage{import}
+%\import*{dirname/}{filenamenodottex}
+
+%UNFOLD
+
+% latex shortcuts%FOLDUP
+\usepackage[commands,shortcuts]{sepmath}
+\input{sharpe_shortcuts.tex}
+
+%for pretty printing code;
+\usepackage{listings}
+
+% do some overloading for the slide show such that
+% sample statistics are in roman and parameters are 
+% in Greek.  mostly.
+\renewcommand{\psrUL}[2]{\mathUL{\zeta}{#1}{#2}}
+\renewcommand{\psr}[1][]{\psrUL{}{#1}}
+\renewcommand{\psnr}[1][]{\psrUL{}{#1}}
+\renewcommand{\psrsq}[1][]{\psrUL{2}{#1}}
+\renewcommand{\psnrsq}[1][]{\psrUL{2}{#1}}
+
+% or \hat{\zeta}?
+\renewcommand{\ssrUL}[2]{\mathUL{\hat{\zeta}}{#1}{#2}}
+\renewcommand{\ssr}[1][]{\ssrUL{}{#1}}
+\renewcommand{\ssrsq}[1][]{\ssrUL{2}{#1}}
+
+% redefine sample stats to have all hats.
+\renewcommand{\smu}[1][]{\mathSUB{\hat{\mu}}{#1}}
+\renewcommand{\ssig}[1][]{\mathSUB{\hat{\sigma}}{#1}}
+
+\renewcommand{\svmu}[1][]{\mathSUB{\hat{\vect{\mu}}}{#1}}
+\renewcommand{\svsig}[1][]{\mathSUB{\hat{\Sigma}}{#1}}
+
+% want to make this seem more like a constant
+\renewcommand{\tpowc}[1][]{\mathSUB{\kappa}{#1}}
+
+\providecommand{\stratrc}[1][]{\mathSUB{\theta}{#1}}
+
+% this is broken in beamer for some reason:
+\renewcommand{\pvsig}[1][]{\mathSUB{\Sigma}{#1}}
+%UNFOLD
+
+\title{Maximizing Sharpe\\and re-inventing the wheel}%FOLDUP
+\author{Steven E. Pav \\
+	Cerebellum Capital \\
+	steven@cerebellumcapital.com \\
+  (@shabbychef)}
+\date{\today}
+%(@shabbychef)\\
+%http://tinyurl.com/RinF2012-spav}
+%UNFOLD
+
+% have this if you'd like a recurring outline
+%\AtBeginSection[]  % "Beamer, do the following at the start of every section"
+%{
+%\begin{frame}<beamer> 
+%\frametitle{Outline} % make a frame titled "Outline"
+%\tableofcontents[currentsection]  % show TOC and highlight current section
+%\end{frame}
+%}
+
+\begin{document}
+
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Sharpe \& Student}%FOLDUP
+
+\begin{frame}[allowframebreaks]{the Sharpe Ratio}%FOLDUP
+\begin{itemize}
+\item Sharpe Ratio (SR) is the sample statistic
+$$\ssr \defeq \frac{\smu}{\ssig},$$
+where \smu is sample mean, \ssig sample standard deviation of strategy returns.\cite{RePEc:ucp:jnlbus:v:39:y:1965:p:119}
+(Ignore risk-free rate for simplicity.)
+\item `Signal-to-Noise Ratio' (SNR) is population analogue $\psnr \defeq \pmu / \psig$.
+\item Connection between SR and \tstat{}-statistic: $\ssr = \tstat{} / \sqrt{\ssiz}$.
+%\end{itemize}
+%\begin{itemize}
+%\item SR actually the same as Student's original test statistic. \cite{student08ttest}
+%\item $\ssr / \sqrt{\ssiz}$ asymptotically takes (non-central) \tlaw{}-distribution.
+%\item A `natural arb': the \tlaw{}-distribution is well studied.  \cite{Johnson:1940,vanBelle2002_STRUTs}
+\end{itemize}
+\end{frame}
+%UNFOLD
+
+%see http://robfelty.com/2008/09/22/beamer-fragile-frames 
+%for fragile and verbatim
+%\begin{frame}[fragile]{Facts about \tstat{} are facts about SR}%FOLDUP
+%\begin{itemize}
+%\item A `natural arb': the \tlaw{}-distribution is well studied.
+%\item Standard error for SR same as that for \tstat{}.
+%\cite{lo2002,Johnson:1940}
+%%%\fbox{ \includegraphics[width=1.2in]{dude_show_Lo_serr_1.eps} }
+%%%\fbox{ \includegraphics[width=0.5in]{dude_show_johnson_welch_serr_1.eps} }
+%%\begin{center}
+%%\fbox{ \includegraphics[width=1.2in]{dude_show_Lo_serr_2.eps} }
+%%\fbox{ \includegraphics[width=0.5in]{dude_show_johnson_welch_serr_3.eps} }
+%%\end{center}
+%\item Correction for autocorrelation in \tstat{} apples to SR.  \cite{vanBelle2002_STRUTs}
+%\item CI via inverting \tlaw{}-pdf for non-centrality.
+%\end{itemize}
+%\end{frame}
+%%UNFOLD
+%UNFOLD
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Markowitz \& Hotelling}%FOLDUP
+
+\begin{frame}{Multivariate Generalization: Hotelling \& Markowitz}%FOLDUP
+
+\begin{itemize}
+\item Consider \ssiz observations of \nlatf-vector of asset returns.
+\item Hotelling \Tstat is multivariate generalization of \tstat:
+\begin{equation}
+\nonumber
+\begin{split}
+\Tstat &\defeq \ssiz {\tr{\svmu}\svsig^{-1}\svmu},\\
+ &= \ssiz \max_{\sportw} \wrapNeParens{\frac{\tr{\sportw}\svmu}{\sqrt{\tr{\sportw}\svsig \sportw}}}^2 
+%= \ssiz \max_{\sportw} \funcit{\ssrsq}{\sportw} 
+= \ssiz \ssrsq[*],
+\end{split}
+\end{equation}
+where \ssr[*] is SR of Markowitz portfolio $\sportw[*]\propto\minv{\svsig}\svmu$.\cite{Hotelling:1931,Sen20073741}  % Roy's UIT
+\item Via Hotelling \Tstat, maximal Sharpe squared has \flaw{}-distribution:
+$$
+\frac{(\ssiz - \nlatf)}{\nlatf (\ssiz - 1)} \ssiz \ssrsq[*] \sim \flaw{\ssiz\psnrsq[*],\nlatf,\ssiz - \nlatf},
+$$
+where \psnr[*] is SNR of \emph{population} optimal portfolio, $\pportw[*]\propto\minv{\pvsig}\pvmu$.\\
+So \ssr[*] can be used to perform inference on \psnr[*]!
+\item \emph{n.b.} \psnr[*] is maximal SNR of \emph{any} portfolio, including \sportw[*].
+\end{itemize}
+\end{frame}
+\nocite{Sen20073741}  % Roy's UIT
+\nocite{kansmith2008}
+%UNFOLD
+
+\begin{frame}{Inference on \psnr[*]}%FOLDUP
+\begin{itemize}
+\item Quant 101: ``don't look at \ssr[*] when computing \sportw[*].''
+%(\ie worse than uninformative, actually harmful.)
+\item Via \flaw{}-distribution we have
+%\begin{equation}
+%\nonumber
+%\begin{split}
+%\E{\ssrsq[*]} &= \frac{\psnrsq[*] + \arat}{1 - \arat},\qquad\mbox{where}\,\,\arat \defeq \nlatf / \ssiz,\\
+%\ssiz\VAR{\ssrsq[*]} &\approx \frac{2\wrapNeParens{\arat + 2\psnrsq[*]}}{(1-\arat)^3}.
+%\end{split}
+%\label{eqn:srstarstats}
+%\end{equation}
+\begin{equation}
+\nonumber
+\E{\ssrsq[*]} = \frac{\psnrsq[*] + \arat}{1 - \arat},\qquad\mbox{where}\,\,\arat \defeq \nlatf / \ssiz.
+\label{eqn:srstarstats}
+\end{equation}
+%Gives unbiased estimator: $\E{(1-\arat)\ssrsq[*] - \arat} = \psnrsq[*]$.
+\item CI, MLE on \psnr[*] via \flaw{}-CDF \& PDF (\texttt{pf} and \texttt{df}).
+%\item Via \flaw{}-distribution, if $\ssrsq[*] \le \frac{\arat}{1 - \arat}$ then MLE of $\psnr[*]$ is 0. \cite{MC1986216}
+\item `Aspect ratio' $\arat\defeq\nlatf / \ssiz$ sets the bar for \ssrsq[*].
+\end{itemize}
+\vspace{-0.03in}
+\begin{alertblock}{rule of thumb, based on \flaw{}-MLE}
+``If $\ssrsq[*] < \arat$, don't trade it!''
+\end{alertblock}
+\nocite{MC1986216}
+\end{frame}
+%UNFOLD
+
+% USAGE of vanilla Hotelling%FOLDUP
+<<'vanillaT',echo=FALSE,print=FALSE,warning=FALSE,message=FALSE>>=
+library(fPortfolio)
+
+lr.to.rr <- function(lr) {
+	return(exp(lr) - 1)
+}
+
+optimal.sr2 <- function(rets) {
+	mu.hat <- as.vector(apply(rets,MARGIN=2,mean,na.rm=TRUE))
+	Sig.hat <- cov(rets)
+	w.opt <- solve(Sig.hat,mu.hat)
+	return(t(mu.hat) %*% w.opt)
+}
+
+hotelling.T2 <- function(rets) {
+	return(dim(rets)[1] * optimal.sr2(rets))
+}
+
+delta.hotelling.T2 <- function(rets,pcols) {
+	Tp <- hotelling.T2(rets[,pcols])
+	Tpq <- hotelling.T2(rets)
+
+	n <- dim(rets)[1]
+	pq <- dim(rets)[2]
+	p <- length(pcols)
+	q <- pq - p
+
+	delta.T <- (n - p - 1) * (Tpq - Tp) / (n - 1 + Tp)
+	as.F <- ((n - pq) / (q * (n - p - 1))) * delta.T
+
+	# inference on the delta T
+	delta.ci <- fncp.ci(as.F,df1=q,df2=n-pq)
+	delta.mle <- fncp.mle(as.F,df1=q,df2=n-pq)
+	as.sr <- sqrt(delta.T / n)
+
+	return(list("deltaT"=delta.T,
+							"asF"=as.F,
+							"ci"=delta.ci,
+							"mle"=delta.mle))
+}
+
+
+hotelling.example <- function(rets) {
+	sr.opt <- sqrt(optimal.sr2(rets))
+	# now run some inferential shit on it!
+	n <- dim(rets)[1]
+	p <- dim(rets)[2]
+	return(list("opt"=sr.opt,
+							"ci"=srstarncp.ci(sr.opt,p=p,n=n),
+							"mle"=srstarncp.mle(sr.opt,p=p,n=n)))
+}
+
+#x.name <- "SMALLCAP"
+#x.data <- lr.to.rr(SMALLCAP.RET)
+#x.name <- "SWX"
+#x.data <- lr.to.rr(SWX.RET[,1:4])
+
+x.name <- "SPISECTOR"
+x.data <- lr.to.rr(SPISECTOR.RET)
+# cut out 'SPI'
+x.data <- x.data[,2:(dim(x.data)[2])]
+
+x.run <- hotelling.example(rets=x.data)
+x.dpy <- 253
+n <- dim(x.data)[1]
+pq <- dim(x.data)[2]
+arat <- pq / n
+
+x.rown <- rownames(x.data)
+x.TEO1 <- x.rown[1]
+x.TEOf <- x.rown[length(x.rown)]
+
+## delta hotelling#FOLDUP
+n <- dim(x.data)[1]
+pq <- dim(x.data)[2]
+
+
+#pcols <- c(1:7)
+#pcols <- c(1,2,3,4,5,7)
+#pcols <- c(1,2,3,4,5)
+#pcols <- c(6,7,8,9)
+pcols <- c(7,8,9)
+qcols <- setdiff((1:pq),pcols)
+
+p <- length(pcols)
+q <- pq - p
+
+dh.run <- delta.hotelling.T2(x.data,pcols)
+
+# annualize them by multiplying by x.dpy, not sqrt
+dd.cilo <- dh.run$ci$lo * (x.dpy) / (n - p - 1)
+dd.cihi <- dh.run$ci$hi * (x.dpy) / (n - p - 1)
+dd.mle <- dh.run$mle * (x.dpy) / (n - p - 1)
+
+x.names <- colnames(x.data)
+pq.names <- x.names
+p.names <- x.names[pcols]
+q.names <- x.names[qcols]
+#UNFOLD
+@
+%UNFOLD
+
+\begin{frame}{Hotelling on S\&P Sector Indices}%FOLDUP
+Index data \texttt{\Sexpr{paste(pq.names,sep=" ",collapse=", ")}} from 
+\texttt{\Sexpr{paste("fPortfolio::",x.name,sep="")}},
+from \Sexpr{x.TEO1} to \Sexpr{x.TEOf}.  ($\ssiz = \Sexpr{n}$ days, $\nlatf = \Sexpr{pq}$ stocks)
+\begin{itemize}
+\item Optimal in-sample Sharpe ratio is $\Sexpr{signif(sqrt(x.dpy) * x.run$opt,digits=2)}\yrto{-1/2}$.
+\item MLE for $\psnr[*]$ is $\Sexpr{signif(sqrt(x.dpy) * x.run$mle,digits=2)}\yrto{-1/2}$.
+%(Note $\ssrsq[*] = \Sexpr{signif(x.run$opt ^ 2,digits=3)}\dayto{-1}$ and $\arat / (1-\arat)= \Sexpr{signif(arat / (1-arat),digits=3)}$, close to the rule of thumb cutoff.)
+%Note $\ssrsq[*] = \Sexpr{signif(x.run$opt ^ 2,digits=3)}\dayto{-1}$ and 
+%$\arat = \Sexpr{signif(arat,digits=3)}\dayto{-1}$, 
+%close to the rule of thumb cutoff.
+Close to the rule of thumb cutoff:
+$\ssrsq[*] = \Sexpr{signif(x.dpy * x.run$opt ^ 2,digits=3)}\yrto{-1}$ and 
+$\arat = \Sexpr{signif(x.dpy * arat,digits=3)}\yrto{-1}$.
+\item 95\% CI for $\psnr[*]$ is $\wrapNeBracks{\Sexpr{signif(sqrt(x.dpy) * x.run$ci$lo,digits=2)}\yrto{-1/2},\Sexpr{signif(sqrt(x.dpy) * x.run$ci$hi,digits=2)}\yrto{-1/2}}$
+\end{itemize}
+Conclusion: Markowitz portfolio on S\&P sectors not recommended.\\
+(joke: how many 'F's are there in 'alpha'?)
+\end{frame}
+%UNFOLD
+
+%UNFOLD
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Odds \& Ends}%FOLDUP
+
+\begin{frame}[allowframebreaks]{Approximation of Strategy Overfit}%FOLDUP
+Caricature of quant work:
+\begin{itemize}
+\item Construct strategy with free parameters \stratrc;
+\item Backtest strategy for $\stratrc[1],\stratrc[2],\ldots,\stratrc[m]$.
+\item Pick \stratrc[i] that maximizes SR of backtest, $\stratrc[*]$.% = \mbox{argmax}_{1\le i\le m}\funcit{\ssr}{\stratrc[i]}$
+\item Profit! (or not)
+\end{itemize}
+
+Toy Example: Moving Average Crossover:
+\begin{itemize}
+\item \stratrc is vector of 2 window lengths; Long the instrument
+exactly when one moving average exceeds the other.
+\item Brute-force backtest for allowable window lengths.
+\end{itemize}
+Q: How to estimate the SNR of \stratrc[*]?
+
+\break
+Q: How to estimate the SNR of \stratrc[*]?\\
+A(?): Make PCA-like linear approximation of returns vectors:
+%$$\wrapNeBraces{\vreti[1],\ldots,\vreti[m]} \approx \mathcal{L} \subset \setwo{\sum_{1\le j \le \nlatf} k_j \vretj[j]}{k_j \in \reals}$$
+$$\wrapNeBraces{\vreti[1],\ldots,\vreti[m]} \approx \mathcal{K} \subset \mathcal{L} \defeq \setwo{\mretj \sportw}{\sportw \in \reals{\nlatf}}$$
+Use $\funcit{\psnr}{\stratrc[*]} \approx \max_{\mathcal{L}} \psnr = \psnr[*]$,
+then make inference on \psnr[*].
+
+Observe maximal strategy SR
+$$\ssr[*] = \funcit{\ssr}{\stratrc[*]} \defeq \max_{1\le i \le m} \funcit{\ssr}{\stratrc[i]},$$
+use it to approximate maximal SR over $\mathcal{L}$.
+
+You have to estimate \nlatf, by Monte Carlo under null, PCA, or SWAG method.
+\end{frame}
+%UNFOLD
+
+\input{mac_overfit}
+
+
+\begin{frame}{Further Directions}%FOLDUP
+\begin{itemize}
+\item Version 0.01 of \texttt{ratarb} package.
+\item Markowitz portfolio \sportw[*] does not achieve \psnr[*]; model the gap.
+\item Validate the overfit approximations 'under the alternative'.
+\item Problems under constrained portfolios; \Tstat[+] is \emph{not} a 'similar' statistic;
+distribution depends on nuisance parameter \pvsig. \cite{Silvapulle1996137,Sen1999264,nla.cat-vn3800977}
+\end{itemize}
+\end{frame}
+%UNFOLD
+
+%UNFOLD
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Appendix}%FOLDUP
+
+\begin{frame}[allowframebreaks]{Bibliography}
+\tiny
+%bibliography%FOLDUP
+
+%%generate the rauto.bib bitex file%FOLDUP
+%see also
+%http://r.789695.n4.nabble.com/Automating-citations-in-Sweave-td872079.html
+<<'gen_bibliography',echo=FALSE,print=FALSE,warning=FALSE,message=FALSE>>=
+FID <- file("rauto.bib", "w")  # open an output file connection
+
+cite.by.name <- function(x){ 
+	res <- toBibtex(citation(x)) 
+	if (is.list(res)) res <- res[[1]] 
+	res[1] <- sub("{",paste("{",x,sep=''),res[1],fixed=TRUE) 
+	#2FIX: multiple citations; bleah;
+	cat(res,file = FID, sep = "\n")
+	return(NULL)
+} 
+z <- sapply( .packages(TRUE), function(x) try( cite.by.name(x) ) )
+close(FID)
+@
+%UNFOLD
+
+%\bibliographystyle{plain}
+\bibliographystyle{sepbib}
+\bibliography{dude,rauto}
+%\bibliography{sepbiblio}
+%UNFOLD
+\end{frame}
+
+\begin{frame}[allowframebreaks]{Skew and Sharpe}%FOLDUP
+\small
+\input{skew_study_show}
+\end{frame}%UNFOLD
+
+<<'t_power_rules_brief',echo=FALSE,print=FALSE>>=
+rhovals <- seq(0.5,3.0,by=0.10)
+rhovals_day <- rhovals / sqrt(dpy)
+# 1-sided test
+samps50.1 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, powr = 0.50))
+samps80.1 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, powr = 0.80))
+coin.flip.c <- median(samps50.1 * rhovals**2)
+hi.conf.c <- median(samps80.1 * rhovals**2)
+@
+
+\begin{frame}[allowframebreaks]{Power and Sample Size}%FOLDUP
+Relation between sample size, effect size (SNR), and rates of 
+false positives and false negatives.\\
+Figure out if you have enough data or enough 'alpha'.
+\begin{itemize}
+	\item Hypothetical Vendor: ``I have three years of historical data.''
+	\item Hypothetical Strategist: ``This strategy has SNR $0.6 \yrto{-1/2}$.''
+	\item Hypothetical Investor: ``You have one year to prove yourself.''
+\end{itemize}
+
+Good approximations of form
+$$\ssiz \approx \frac{\tpowc}{\psnrsq},$$
+with \tpowc a function of type I and type II rates, \etc
+\cite{vanBelle2002_STRUTs,Johnson:1940}
+
+<<'t_power_rules',echo=FALSE,print=TRUE,message=FALSE,warning=FALSE,results="asis">>=
+require(xtable)
+rhovals <- seq(0.5,3.0,by=0.10)
+rhovals_day <- rhovals / sqrt(dpy)
+samps50.1 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, powr = 0.50))
+samps80.1 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, powr = 0.80))
+#2sided test
+samps50.2 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, alpha=0.025, powr = 0.50))
+samps80.2 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, alpha=0.025, powr = 0.80))
+foo <- data.frame("one sided" = c(median(samps50.1 * rhovals**2),median(samps80.1 * rhovals**2)),
+									"two sided" = c(median(samps50.2 * rhovals**2),median(samps80.2 * rhovals**2)),
+									row.names = c("power = 0.50","power = 0.80"))
+xres <- xtable(foo,label="tab:ttestpower",caption="Value of \\tpowc to achieve given power in t-test, $\\typeI = 0.05$.")
+print(xres,include.rownames=TRUE)
+coin.flip.c <- median(samps50.1 * rhovals**2)
+hi.conf.c <- median(samps80.1 * rhovals**2)
+@
+
+\break
+
+\begin{alertblock}{rule of thumb for Sharpe power}
+To test SNR $> 0$, with 0.05 type I rate, and 50 \% power, 
+$$\ssiz \approx \frac{\Sexpr{signif(coin.flip.c,digits=3)}}{\psnrsq}.\qquad\mbox{mnemonic form: }e \approx \ssiz\psnrsq$$
+\end{alertblock}
+
+This rule is sobering:
+\begin{itemize}
+	\item Hypothetical Vendor: ``I have three years of historical data.''\\
+	Answer: Strategy must have SNR 
+	$\ge \Sexpr{signif(sqrt(coin.flip.c / 3),digits=2)} \yrto{-1/2}$.
+	\item Hypothetical Strategist: ``This strategy has SNR $0.6 \yrto{-1/2}$.''\\
+	Answer: Need 
+	\Sexpr{signif(coin.flip.c / (0.6 ^ 2),digits=2)} years of data to backtest. (!)
+	\item Hypothetical Investor: ``You have one year to prove yourself.''\\
+	Answer: Strategy must have SNR $\ge \Sexpr{signif(sqrt(coin.flip.c / 1),digits=2)} \yrto{-1/2}$.
+\end{itemize}
+
+\end{frame}
+%UNFOLD
+%abbreviated version. still too long. fuck it.
+%\begin{frame}[allowframebreaks]{Power and Sample Size}%FOLDUP
+%Power: Relation between sample size, effect size (SNR), and rates of 
+%false positives and false negatives. ``Do I have enough data or alpha?''
+%\begin{alertblock}{rule of thumb for Sharpe power}
+%To test SNR $> 0$, with 0.05 type I rate, and 50 \% power, 
+%$$\ssiz \approx \frac{\Sexpr{signif(coin.flip.c,digits=3)}}{\psnrsq}.\qquad\mbox{mnemonic form: }e \approx \ssiz\psnrsq$$
+%\end{alertblock}
+
+%This rule is sobering:
+%\begin{itemize}
+	%%\item Hypothetical Vendor: ``I have three years of historical data.''\\
+	%%Answer: Strategy must have SNR 
+	%%$\ge \Sexpr{signif(sqrt(coin.flip.c / 3),digits=2)} \yrto{-1/2}$.
+	%\item Hypothetical Strategist: ``This strategy has SNR $0.7 \yrto{-1/2}$.''\\
+	%Rule: Need 
+	%\Sexpr{signif(coin.flip.c / (0.7 ^ 2),digits=2)} years of data to backtest. (!)
+	%\item Hypothetical Investor: ``You have one year to prove yourself.''\\
+	%Rule: Strategy must have SNR $\ge \Sexpr{signif(sqrt(coin.flip.c / 1),digits=2)} \yrto{-1/2}$.
+%\end{itemize}
+
+%\end{frame}
+%%UNFOLD
+
+\begin{frame}{Delta Hotelling}%FOLDUP
+
+\begin{itemize}
+\item Can generalize Hotelling statistic to get 'Spanning Tests'
+\cite{BrittenJones1999,KanZhou2012}
+\item Let \Tstat[\nlatftot],\Tstat[\nlatf] be Hotelling stats on 
+full set of \nlatftot assets and subset of $\nlatf$ assets.
+Do the \nlatfmo  marginal assets 'add any value'.
+\item Let
+$$
+\Delta \Tstat = (\ssiz - \nlatf - 1)\frac{\Tstat[\nlatftot]-\Tstat[\nlatf]}{\ssiz - 1 + \Tstat[\nlatf]} = 
+(\ssiz - \nlatf - 1) \frac{\ssrsq[*,\nlatftot] - \ssrsq[*,\nlatf]}{1 - (1/\ssiz) + \ssrsq[*,\nlatf]}.
+$$
+\item $\Delta\Tstat$ also takes a (non-central) Hotelling distribution:
+\begin{equation}
+\nonumber
+\begin{split}
+\frac{\ssiz-(\nlatftot)}{\nlatfmo(\ssiz-\nlatf-1)} \Delta \Tstat &\sim \flaw{\nlatfmo,\ssiz-(\nlatftot),\ncfp},\\
+		\ncfp &= (\ssiz - \nlatf - 1) \frac{\psnrsq[*,\nlatftot] - \psnrsq[*,\nlatf]}{1 - (1/\ssiz) + \psnrsq[*,\nlatf]}.
+\end{split}
+\end{equation}
+\item Same inference on \ncfp can be applied (MLE, CI).
+\end{itemize}
+\end{frame}
+%UNFOLD
+
+\begin{frame}{Delta Hotelling on S\&P Sector Indices}%FOLDUP
+Delta Hotelling: what do \texttt{\Sexpr{paste(q.names,sep=" ",collapse=", ")}} add to 
+\texttt{\Sexpr{paste(p.names,sep=" ",collapse=", ")}}?
+\begin{itemize}
+\item MLE for $\wrapNeParens{\psnrsq[*,\nlatftot] - \psnrsq[*,\nlatf]}$ is 
+$\Sexpr{signif(dd.mle,digits=2)}\yrto{-1}$.
+\item 95\% CI for $\wrapNeParens{\psnrsq[*,\nlatftot] - \psnrsq[*,\nlatf]}$ is
+$\wrapNeBracks{\Sexpr{signif(dd.cilo,digits=2)}\yrto{-1},\Sexpr{signif(dd.cihi,digits=2)}\yrto{-1}}$.
+\end{itemize}
+\end{frame}
+%UNFOLD
+
+%\begin{frame}[fragile]{Some R Code}%FOLDUP
+%%\begin{lstlisting}[language=R,basicstyle=\footnotesize\ttfamily,caption=CI on SNR]
+%{\footnotesize
+%\begin{verbatim}
+%p.sr <- function(sr,df,snr=0,a.fact=252) {
+	%#H_0: SNR=given snr vs H_1: SNR>given snr
+	%p.val <- pt(sr*sqrt(df/a.fact),df-1,
+							%snr*sqrt(df/a.fact),lower.tail=FALSE)
+%}
+%qco.sr <- function(sr,df,alpha,a.fact=252) {
+	%#q'tile of S.R. 'Confidence Distribution'
+	%adj.c <- sqrt(df/a.fact)
+	%find.ncp <- uniroot(function(ncp)
+				%(pt(sr*adj.c,df-1,ncp) - (1-alpha)),
+				%interval=c(-36,36)) # a hack!
+	%return(find.ncp$root / adj.c)
+%}
+%sr.ci <- function(sr,df,alpha,...) {  # CI
+	%return(c(qco.sr(sr,df,alpha/2,...),
+					 %qco.sr(sr,df,1-(alpha/2),...)))
+%}
+%\end{verbatim}
+%}
+%%\end{lstlisting}
+%\end{frame}%UNFOLD
+%UNFOLD
+
+\end{document}
+%for vim modeline: (do not edit)
+% vim:ts=2:sw=2:tw=79:fdm=marker:fmr=FOLDUP,UNFOLD:cms=%%s:syn=rnoweb:ft=rnoweb:ai:si:cin:nu:fo=croql:cino=p0t0c5(0:
