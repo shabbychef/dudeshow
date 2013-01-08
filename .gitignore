@@ -2,4 +2,20 @@
 .Rhistory
 
 # Example code in package build process
-*-Ex.R
+*-Ex.R.
+
+# latex garbage
+*.nav
+*.toc
+*.aux
+*.out
+*.log
+
+# bibtext garbage
+*.bbl
+*.blg
+
+# knitr cache
+cache/
+figure/*.pdf
+figure/*.eps

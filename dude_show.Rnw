@@ -71,7 +71,7 @@ LONG.FORM <- FALSE
 %UNFOLD
 
 % latex shortcuts%FOLDUP
-\usepackage[commands,shortcuts]{sepmath}
+%\usepackage[commands,shortcuts]{sepmath}
 \input{sharpe_shortcuts.tex}
 
 %for pretty printing code;
