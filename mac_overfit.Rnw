@@ -160,7 +160,7 @@ T2.qqplot(max.hot,n=nday,p=apx.p,ncp=0,nsamp=2048)
 \vspace{-0.35in}
 \begin{figure}[htbp]
   \begin{center}
-		\includegraphics[width=1.95in]{figure/macfitz.eps}
+		\includegraphics[width=1.95in]{figure/macfitz}
 		\caption{\Sexpr{ntrial} Monte Carlo sims of model selection in 2-window MAC over \Sexpr{nday} days, 
 			under the null (no population drift or autocorrelation).  In-sample \ssr[*] values transformed to 
 			F-statistics with $\nlatf=\Sexpr{apx.p}$.}

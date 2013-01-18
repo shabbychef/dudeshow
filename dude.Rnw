@@ -439,8 +439,8 @@ close(FID)
 @
 %UNFOLD
 
-%\bibliographystyle{plain}
-\bibliographystyle{sepbib}
+\bibliographystyle{plain}
+%\bibliographystyle{sepbib}
 \bibliography{dude,rauto}
 %\bibliography{sepbiblio}
 %UNFOLD

@@ -46,7 +46,7 @@ DETEXIFY		 = perl $(HOME)/sys/perl/detexify.pl
 SCREEN_SIZE  = normal
 include	$(HOME)/sys/etc/.Makefile.local
 
-PROJECT      = dude_show
+PROJECT      = dude
 TEX_SOURCE   = $(PROJECT).tex
 BIB_SOURCE   = $(PROJECT).bib
 DVI_TARGET   = $(PROJECT).dvi
@@ -60,7 +60,7 @@ PROJECTS     = $(PROJECT)
 #UNSAVE
 # add on dependencies (subchapters of dude)
 R_DEPS 			 = defs.R
-TEX_EXTRAS   = sharpe_shortcuts.tex 
+TEX_EXTRAS   = sharpe_shortcuts.tex mac_overfit.tex skew_study_show.tex
 TEX_EXTRAS  += $(R_DEPS)
 # nonlocal dependencies
 STY_FILES    = 

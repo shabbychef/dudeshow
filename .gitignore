@@ -10,6 +10,14 @@
 *.aux
 *.out
 *.log
+*.snm
+
+*.dvi
+
+dude.tex
+mac_overfit.tex
+skew_study_show.tex
+rauto.bib
 
 # bibtext garbage
 *.bbl
@@ -19,3 +27,4 @@
 cache/
 figure/*.pdf
 figure/*.eps
+
