@@ -1,3 +1,7 @@
+# vim anything
+.*.swp
+
+
 # History files
 .Rhistory
 

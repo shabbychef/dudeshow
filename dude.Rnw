@@ -107,14 +107,11 @@ LONG.FORM <- FALSE
 \renewcommand{\pvsig}[1][]{\mathSUB{\Sigma}{#1}}
 %UNFOLD
 
-\title{Maximizing Sharpe\\and re-inventing the wheel}%FOLDUP
+\title{Dude, Where's my Alpha?\\dispatches from a `quant'}%FOLDUP
 \author{Steven E. Pav \\
 	Cerebellum Capital \\
-	steven@cerebellumcapital.com \\
-  (@shabbychef)}
+	steven@cerebellumcapital.com}
 \date{\today}
-%(@shabbychef)\\
-%http://tinyurl.com/RinF2012-spav}
 %UNFOLD
 
 % have this if you'd like a recurring outline
@@ -134,7 +131,53 @@ LONG.FORM <- FALSE
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Sharpe \& Student}%FOLDUP
+\section{Intro}%FOLDUP
+
+\begin{frame}{Would you rather?}%FOLDUP
+
+<<'wyrather',include=FALSE,fig=TRUE,dev=c("cairo_ps","pdf")>>=
+nyr <- 5
+epy <- 253
+nobs <- ceiling(nyr * epy)
+tdf <- 5
+
+#set.seed(92843)
+#set.seed(12843)  # in this one, the gren line dominates at 10 years!
+set.seed(72843)  
+# sr and volatility, annualized.
+downit <- 0.7
+sr1 <- downit * 0.7
+sr2 <- downit * 1.1
+
+# force them to have the same long term mean:
+sg1 <- 0.15
+mu1 <- sr1 * sg1
+sg2 <- mu1 / sr2
+mu2 <- sr2 * sg2
+
+m1 <- exp(cumsum((sg1 / sqrt(epy)) * ((sr1/sqrt(epy)) + sqrt((tdf - 2)/tdf) * rt(nobs,df=tdf))))
+m2 <- exp(cumsum((sg2 / sqrt(epy)) * ((sr2/sqrt(epy)) + sqrt((tdf - 2)/tdf) * rt(nobs,df=tdf))))
+yrs <- seq(from=1,to=1+nyr,length.out=nobs)
+
+plot(yrs,m1,xlab="year",ylab="AUM",type='l',col='green',log='y')
+lines(yrs,m2,col='blue')
+legend(1 + 0.1*nyr,0.8 * max(max(m2),max(m1)), # the location
+			 c("strategy 1","strategy 2"),  # what?
+			 lty=c(1,1), # gives the legend appropriate symbols (lines)
+			 col=c("green","blue"))
+
+@
+\vspace{-0.35in}
+\begin{figure}[htbp]
+  \begin{center}
+		\includegraphics[width=2.5in]{figure/wyrather}
+		\caption{Which would you rather invest in?}
+		\label{fig:wyrather}
+	\end{center}
+\end{figure}
+\vspace{-0.25in}
+\end{frame}
+%UNFOLD
 
 \begin{frame}[allowframebreaks]{the Sharpe Ratio}%FOLDUP
 \begin{itemize}
@@ -144,33 +187,15 @@ where \smu is sample mean, \ssig sample standard deviation of strategy returns.\
 (Ignore risk-free rate for simplicity.)
 \item `Signal-to-Noise Ratio' (SNR) is population analogue $\psnr \defeq \pmu / \psig$.
 \item Connection between SR and \tstat{}-statistic: $\ssr = \tstat{} / \sqrt{\ssiz}$.
+\item SR actually the same as Student's original test statistic. \cite{student08ttest}
 %\end{itemize}
 %\begin{itemize}
-%\item SR actually the same as Student's original test statistic. \cite{student08ttest}
 %\item $\ssr / \sqrt{\ssiz}$ asymptotically takes (non-central) \tlaw{}-distribution.
 %\item A `natural arb': the \tlaw{}-distribution is well studied.  \cite{Johnson:1940,vanBelle2002_STRUTs}
 \end{itemize}
 \end{frame}
 %UNFOLD
 
-%see http://robfelty.com/2008/09/22/beamer-fragile-frames 
-%for fragile and verbatim
-%\begin{frame}[fragile]{Facts about \tstat{} are facts about SR}%FOLDUP
-%\begin{itemize}
-%\item A `natural arb': the \tlaw{}-distribution is well studied.
-%\item Standard error for SR same as that for \tstat{}.
-%\cite{lo2002,Johnson:1940}
-%%%\fbox{ \includegraphics[width=1.2in]{dude_show_Lo_serr_1.eps} }
-%%%\fbox{ \includegraphics[width=0.5in]{dude_show_johnson_welch_serr_1.eps} }
-%%\begin{center}
-%%\fbox{ \includegraphics[width=1.2in]{dude_show_Lo_serr_2.eps} }
-%%\fbox{ \includegraphics[width=0.5in]{dude_show_johnson_welch_serr_3.eps} }
-%%\end{center}
-%\item Correction for autocorrelation in \tstat{} apples to SR.  \cite{vanBelle2002_STRUTs}
-%\item CI via inverting \tlaw{}-pdf for non-centrality.
-%\end{itemize}
-%\end{frame}
-%%UNFOLD
 %UNFOLD
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -603,6 +628,25 @@ $\wrapNeBracks{\Sexpr{signif(dd.cilo,digits=2)}\yrto{-1},\Sexpr{signif(dd.cihi,d
 %%\end{lstlisting}
 %\end{frame}%UNFOLD
 %UNFOLD
+
+%see http://robfelty.com/2008/09/22/beamer-fragile-frames 
+%for fragile and verbatim
+%\begin{frame}[fragile]{Facts about \tstat{} are facts about SR}%FOLDUP
+%\begin{itemize}
+%\item A `natural arb': the \tlaw{}-distribution is well studied.
+%\item Standard error for SR same as that for \tstat{}.
+%\cite{lo2002,Johnson:1940}
+%%%\fbox{ \includegraphics[width=1.2in]{dude_show_Lo_serr_1.eps} }
+%%%\fbox{ \includegraphics[width=0.5in]{dude_show_johnson_welch_serr_1.eps} }
+%%\begin{center}
+%%\fbox{ \includegraphics[width=1.2in]{dude_show_Lo_serr_2.eps} }
+%%\fbox{ \includegraphics[width=0.5in]{dude_show_johnson_welch_serr_3.eps} }
+%%\end{center}
+%\item Correction for autocorrelation in \tstat{} apples to SR.  \cite{vanBelle2002_STRUTs}
+%\item CI via inverting \tlaw{}-pdf for non-centrality.
+%\end{itemize}
+%\end{frame}
+%%UNFOLD
 
 \end{document}
 %for vim modeline: (do not edit)
