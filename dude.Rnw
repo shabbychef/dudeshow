@@ -14,6 +14,8 @@
 source("knitr_opts.R")
 source("defs.R")
 
+compile.time <- Sys.time()
+
 # compiler flags!
 
 #FINAL.VERSION <- TRUE
@@ -102,6 +104,9 @@ LONG.FORM <- FALSE
 \renewcommand{\tpowc}[1][]{\mathSUB{\kappa}{#1}}
 
 \providecommand{\stratrc}[1][]{\mathSUB{\theta}{#1}}
+% see superuser.com/questions/69856
+%\providecommand{\coindie}{\MATHIT{\coprod}}
+\providecommand{\coindie}{\MATHIT{\perp\!\!\!\perp}}
 
 % this is broken in beamer for some reason:
 \renewcommand{\pvsig}[1][]{\mathSUB{\Sigma}{#1}}
@@ -111,7 +116,8 @@ LONG.FORM <- FALSE
 \author{Steven E. Pav \\
 	Cerebellum Capital \\
 	steven@cerebellumcapital.com}
-\date{\today}
+%\date{\today}
+\date{\Sexpr{compile.time}}
 %UNFOLD
 
 % have this if you'd like a recurring outline
@@ -133,6 +139,18 @@ LONG.FORM <- FALSE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Intro}%FOLDUP
 
+\begin{frame}{The Billion Dollar Quant Problem}%FOLDUP
+Stipulate the following:
+\begin{itemize}
+\item Generating ideas for trading strategies is easy.\\
+(Generating \emph{good} ideas is harder.)
+\item Backtesting strategies is an engineering problem.\\
+(Not easy, not insurmountable.)
+\item If evaluating strategies were easy, a lot of smart people would be rich.
+\end{itemize}
+Evaluating strategies must be hard. 
+\end{frame}%UNFOLD
+
 \begin{frame}{Would you rather?}%FOLDUP
 
 <<'wyrather',include=FALSE,fig=TRUE>>=
@@ -145,15 +163,15 @@ tdf <- 5
 #set.seed(12843)  # in this one, the gren line dominates at 10 years!
 set.seed(72843)  
 # sr and volatility, annualized.
-downit <- 0.7
-sr1 <- downit * 0.7
-sr2 <- downit * 1.1
+downit <- 1.0
+sr1 <- downit * 0.45
+sr2 <- downit * 1.6
 
-# force them to have the same long term mean:
-sg1 <- 0.15
+# force them to have (nearly) the same long term mean:
+sg1 <- 0.19
 mu1 <- sr1 * sg1
-sg2 <- mu1 / sr2
-mu2 <- sr2 * sg2
+mu2 <- 0.60 * mu1
+sg2 <- mu2 / sr2
 
 m1 <- exp(cumsum((sg1 / sqrt(epy)) * ((sr1/sqrt(epy)) + sqrt((tdf - 2)/tdf) * rt(nobs,df=tdf))))
 m2 <- exp(cumsum((sg2 / sqrt(epy)) * ((sr2/sqrt(epy)) + sqrt((tdf - 2)/tdf) * rt(nobs,df=tdf))))
@@ -161,7 +179,7 @@ yrs <- seq(from=1,to=1+nyr,length.out=nobs)
 
 plot(yrs,m1,xlab="year",ylab="AUM",type='l',col='green',log='y')
 lines(yrs,m2,col='blue')
-legend(1 + 0.1*nyr,0.8 * max(max(m2),max(m1)), # the location
+legend(1 + 0.1*nyr,0.95 * max(max(m2),max(m1)), # the location
 			 c("strategy 1","strategy 2"),  # what?
 			 lty=c(1,1), # gives the legend appropriate symbols (lines)
 			 col=c("green","blue"))
@@ -171,23 +189,28 @@ legend(1 + 0.1*nyr,0.8 * max(max(m2),max(m1)), # the location
 \begin{figure}[htbp]
   \begin{center}
 		\includegraphics[width=2.5in]{figure/wyrather}
-		\caption{Which would you rather invest in?}
+		%\caption{Which strategy would you rather invest in? ``Slow and Steady'' or ``Loose Cannon''?}
 		\label{fig:wyrather}
 	\end{center}
 \end{figure}
-\vspace{-0.25in}
+\vspace{-0.20in}
+Which strategy would you rather invest in? ``Slow and Steady'' or ``Loose Cannon''?
+\emph{n.b.} You don't get to replay history.
 \end{frame}
 %UNFOLD
 
-\begin{frame}[allowframebreaks]{the Sharpe Ratio}%FOLDUP
+%\begin{frame}[allowframebreaks]{the Sharpe Ratio}
+\begin{frame}{the Sharpe Ratio}%FOLDUP
 \begin{itemize}
-\item Sharpe Ratio (SR) is the sample statistic
+\item The Sharpe Ratio (SR) is the sample statistic
 $$\ssr \defeq \frac{\smu}{\ssig},$$
 where \smu is sample mean, \ssig sample standard deviation of strategy returns.\cite{RePEc:ucp:jnlbus:v:39:y:1965:p:119}
-(Ignore risk-free rate for simplicity.)
-\item `Signal-to-Noise Ratio' (SNR) is population analogue $\psnr \defeq \pmu / \psig$.
+Later amended to include 'risk-free' rate:
+$$\ssr = \frac{\smu - \rfr}{\ssig}.$$
+\item Signal-to-Noise Ratio (SNR) is population analogue $\psnr \defeq \pmu / \psig$.
 \item Connection between SR and \tstat{}-statistic: $\ssr = \tstat{} / \sqrt{\ssiz}$.
 \item SR actually the same as Student's original test statistic. \cite{student08ttest}
+Perhaps better to call it `Student Ratio'.
 %\end{itemize}
 %\begin{itemize}
 %\item $\ssr / \sqrt{\ssiz}$ asymptotically takes (non-central) \tlaw{}-distribution.
@@ -196,6 +219,172 @@ where \smu is sample mean, \ssig sample standard deviation of strategy returns.\
 \end{frame}
 %UNFOLD
 
+\begin{frame}[allowframebreaks]{Sharpe Ratio Minutiae}%FOLDUP
+\begin{itemize}
+\item No real standard on arithmetic vs. geometric returns.\\
+(Log is a concave function so geometric SR likely to be lower.)
+\item The units of Sharpe are `per square root time':\\
+\smu is `(percent) per time', \ssig is `(percent) per root time'.
+\item Sharpe is often quoted in annualized units, \ie \yrto{-1/2}.\\
+Avoid ambiguity and \emph{always} include units.
+\item Vaguely, in equities space, achieved SR translates as:
+$1\yrto{-1/2} = \mbox{good}$,
+$2\yrto{-1/2} = \mbox{excellent}$,
+$3\yrto{-1/2} = \mbox{legend}$.\\
+In HFT, higher SR the norm, but large fixed costs (like \rfr).
+
+\break
+
+<<'SR_equivalents'>>=
+srs <- c(1,2,3)
+prs <- pnorm(- srs,lower.tail=TRUE)
+@
+
+\item Cantelli's Inequality gives:
+$$\Pr{\mbox{negative return on period}} \le \frac{1}{1 + {\psnr}^2}$$
+\item Another view: a year-on-year loss is a ``\psnr sigma event''.\\
+Central Limit Theorem: If returns are well behaved, 
+enough gambles are made, annual return will be nearly normal.
+\begin{align*}
+\psnr = \Sexpr{srs[1]}\yrto{-1/2} &\Rightarrow \Pr{\mbox{down year}} = \Sexpr{signif(100 * prs[1],digits=2)}\mbox{\%}\\
+\psnr = \Sexpr{srs[2]}\yrto{-1/2} &\Rightarrow \Pr{\mbox{down year}} = \Sexpr{signif(100 * prs[2],digits=2)}\mbox{\%}\\
+\psnr = \Sexpr{srs[3]}\yrto{-1/2} &\Rightarrow \Pr{\mbox{down year}} = \Sexpr{signif(100 * prs[3],digits=2)}\mbox{\%}
+\end{align*}
+2FIX: How does this translate to quarters?
+\item Often more natural to consider $\psrUL{2}{}, \ssrUL{2}{}$.
+
+\end{itemize}
+\end{frame}
+%UNFOLD
+
+\begin{frame}{Diversification and Sharpe Ratio}%FOLDUP
+\begin{itemize}
+\item \emph{Squared} SNR of independent strategies is subadditive:
+For $k$ \coindie strategies, with SNRs $\psnr[1],\ldots,\psnr[k]$, optimal
+rebalancing combination has
+$$\psrsq[*] = \sum_i \psrsq[i]$$
+Diminishing returns in \psr : $2\yrto{-1/2} + 1\yrto{-1/2} \Rightarrow \Sexpr{signif(sqrt(2^2 + 1),digits=2)}\yrto{-1/2}$.
+\item For dependent strategies, correlation is relevant.\\
+For two strategies with correlation $\rho$:
+$$\psrUL{2}{*} = \frac{\psrUL{2}{1} + \psrUL{2}{2} - 2\rho\psrUL{}{1}\psrUL{}{2}}{1 - \rho^2}$$
+\item In general, want anti-correlated strategies (`hedges').\\
+Avoid strategies correlated to the `retail alpha'.
+\end{itemize}
+\end{frame}
+%UNFOLD
+
+\begin{frame}{Diversification vs Correlation}%FOLDUP
+
+<<'divandcorr',include=FALSE,fig=TRUE>>=
+snr1 <- 1 / sqrt(2)
+snr2 <- snr1
+corrs <- seq(from=-0.5,to=0.5,length.out=1001)
+snrs <- sqrt((snr1^2 + snr2^2 - 2*corrs*snr1*snr2) / (1-corrs^2))
+
+plot(corrs,snrs,xlab="correlation",ylab="optimal SNR",type='l',col='green')
+abline(h=1,col='gray',lty=2)
+abline(v=0,col='gray',lty=2)
+@
+\vspace{-0.35in}
+\begin{figure}[htbp]
+  \begin{center}
+		\includegraphics[width=2.5in]{figure/divandcorr}
+		\caption{Given two strategies with $\psnr[i] = \Sexpr{signif(snr1,digits=2)}\yrto{-1/2}$,
+		\psnr[*] is plotted versus $\rho$.}
+		\label{fig:divandcorr}
+	\end{center}
+\end{figure}
+\vspace{-0.20in}
+\end{frame}
+%UNFOLD
+
+<<'t_power_rules_brief'>>=
+rhovals <- seq(0.5,3.0,by=0.10)
+rhovals_day <- rhovals / sqrt(dpy)
+# 1-sided test
+samps50.1 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, powr = 0.50))
+samps80.1 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, powr = 0.80))
+coin.flip.c <- median(samps50.1 * rhovals**2)
+hi.conf.c <- median(samps80.1 * rhovals**2)
+@
+
+\begin{frame}[allowframebreaks]{Power and Sample Size}%FOLDUP
+Relation between sample size, effect size (SNR), and rates of 
+false positives and false negatives.\\
+Figure out if you have enough data or enough 'alpha'.
+\begin{itemize}
+	\item Hypothetical Vendor: ``I have three years of historical data.''
+	\item Hypothetical Strategist: ``This strategy has SNR $0.6 \yrto{-1/2}$.''
+	\item Hypothetical Investor: ``You have one year to prove yourself.''
+\end{itemize}
+
+Good approximations of form
+$$\ssiz \approx \frac{\tpowc}{\psnrsq},$$
+with \tpowc a function of type I and type II rates, \etc
+\cite{vanBelle2002_STRUTs,Johnson:1940}
+
+<<'t_power_rules',print=TRUE,results="asis">>=
+require(xtable)
+rhovals <- seq(0.5,3.0,by=0.10)
+rhovals_day <- rhovals / sqrt(dpy)
+samps50.1 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, powr = 0.50))
+samps80.1 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, powr = 0.80))
+#2sided test
+samps50.2 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, alpha=0.025, powr = 0.50))
+samps80.2 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, alpha=0.025, powr = 0.80))
+foo <- data.frame("one sided" = c(median(samps50.1 * rhovals**2),median(samps80.1 * rhovals**2)),
+									"two sided" = c(median(samps50.2 * rhovals**2),median(samps80.2 * rhovals**2)),
+									row.names = c("power = 0.50","power = 0.80"))
+xres <- xtable(foo,label="tab:ttestpower",caption="Value of \\tpowc to achieve given power in t-test, $\\typeI = 0.05$.")
+print(xres,include.rownames=TRUE)
+coin.flip.c <- median(samps50.1 * rhovals**2)
+hi.conf.c <- median(samps80.1 * rhovals**2)
+@
+
+\break
+
+\begin{alertblock}{rule of thumb for Sharpe power}
+To test SNR $> 0$, with 0.05 type I rate, and 50 \% power, 
+$$\ssiz \approx \frac{\Sexpr{signif(coin.flip.c,digits=3)}}{\psnrsq}.\qquad\mbox{mnemonic form: }e \approx \ssiz\psnrsq$$
+\end{alertblock}
+
+This rule is sobering:
+\begin{itemize}
+	\item Hypothetical Vendor: ``I have three years of historical data.''\\
+	Answer: Strategy must have SNR 
+	$\ge \Sexpr{signif(sqrt(coin.flip.c / 3),digits=2)} \yrto{-1/2}$.
+	\item Hypothetical Strategist: ``This strategy has SNR $0.6 \yrto{-1/2}$.''\\
+	Answer: Need 
+	\Sexpr{signif(coin.flip.c / (0.6 ^ 2),digits=2)} years of data to backtest. (!)
+	\item Hypothetical Investor: ``You have one year to prove yourself.''\\
+	Answer: Strategy must have SNR $\ge \Sexpr{signif(sqrt(coin.flip.c / 1),digits=2)} \yrto{-1/2}$.
+\end{itemize}
+
+\end{frame}
+%UNFOLD
+%abbreviated version. still too long. fuck it.
+%\begin{frame}[allowframebreaks]{Power and Sample Size}%FOLDUP
+%Power: Relation between sample size, effect size (SNR), and rates of 
+%false positives and false negatives. ``Do I have enough data or alpha?''
+%\begin{alertblock}{rule of thumb for Sharpe power}
+%To test SNR $> 0$, with 0.05 type I rate, and 50 \% power, 
+%$$\ssiz \approx \frac{\Sexpr{signif(coin.flip.c,digits=3)}}{\psnrsq}.\qquad\mbox{mnemonic form: }e \approx \ssiz\psnrsq$$
+%\end{alertblock}
+
+%This rule is sobering:
+%\begin{itemize}
+	%%\item Hypothetical Vendor: ``I have three years of historical data.''\\
+	%%Answer: Strategy must have SNR 
+	%%$\ge \Sexpr{signif(sqrt(coin.flip.c / 3),digits=2)} \yrto{-1/2}$.
+	%\item Hypothetical Strategist: ``This strategy has SNR $0.7 \yrto{-1/2}$.''\\
+	%Rule: Need 
+	%\Sexpr{signif(coin.flip.c / (0.7 ^ 2),digits=2)} years of data to backtest. (!)
+	%\item Hypothetical Investor: ``You have one year to prove yourself.''\\
+	%Rule: Strategy must have SNR $\ge \Sexpr{signif(sqrt(coin.flip.c / 1),digits=2)} \yrto{-1/2}$.
+%\end{itemize}
+
+%\end{frame}
+%%UNFOLD
 %UNFOLD
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -475,94 +664,6 @@ close(FID)
 \small
 \input{skew_study_show}
 \end{frame}%UNFOLD
-
-<<'t_power_rules_brief'>>=
-rhovals <- seq(0.5,3.0,by=0.10)
-rhovals_day <- rhovals / sqrt(dpy)
-# 1-sided test
-samps50.1 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, powr = 0.50))
-samps80.1 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, powr = 0.80))
-coin.flip.c <- median(samps50.1 * rhovals**2)
-hi.conf.c <- median(samps80.1 * rhovals**2)
-@
-
-\begin{frame}[allowframebreaks]{Power and Sample Size}%FOLDUP
-Relation between sample size, effect size (SNR), and rates of 
-false positives and false negatives.\\
-Figure out if you have enough data or enough 'alpha'.
-\begin{itemize}
-	\item Hypothetical Vendor: ``I have three years of historical data.''
-	\item Hypothetical Strategist: ``This strategy has SNR $0.6 \yrto{-1/2}$.''
-	\item Hypothetical Investor: ``You have one year to prove yourself.''
-\end{itemize}
-
-Good approximations of form
-$$\ssiz \approx \frac{\tpowc}{\psnrsq},$$
-with \tpowc a function of type I and type II rates, \etc
-\cite{vanBelle2002_STRUTs,Johnson:1940}
-
-<<'t_power_rules',print=TRUE,results="asis">>=
-require(xtable)
-rhovals <- seq(0.5,3.0,by=0.10)
-rhovals_day <- rhovals / sqrt(dpy)
-samps50.1 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, powr = 0.50))
-samps80.1 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, powr = 0.80))
-#2sided test
-samps50.2 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, alpha=0.025, powr = 0.50))
-samps80.2 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, alpha=0.025, powr = 0.80))
-foo <- data.frame("one sided" = c(median(samps50.1 * rhovals**2),median(samps80.1 * rhovals**2)),
-									"two sided" = c(median(samps50.2 * rhovals**2),median(samps80.2 * rhovals**2)),
-									row.names = c("power = 0.50","power = 0.80"))
-xres <- xtable(foo,label="tab:ttestpower",caption="Value of \\tpowc to achieve given power in t-test, $\\typeI = 0.05$.")
-print(xres,include.rownames=TRUE)
-coin.flip.c <- median(samps50.1 * rhovals**2)
-hi.conf.c <- median(samps80.1 * rhovals**2)
-@
-
-\break
-
-\begin{alertblock}{rule of thumb for Sharpe power}
-To test SNR $> 0$, with 0.05 type I rate, and 50 \% power, 
-$$\ssiz \approx \frac{\Sexpr{signif(coin.flip.c,digits=3)}}{\psnrsq}.\qquad\mbox{mnemonic form: }e \approx \ssiz\psnrsq$$
-\end{alertblock}
-
-This rule is sobering:
-\begin{itemize}
-	\item Hypothetical Vendor: ``I have three years of historical data.''\\
-	Answer: Strategy must have SNR 
-	$\ge \Sexpr{signif(sqrt(coin.flip.c / 3),digits=2)} \yrto{-1/2}$.
-	\item Hypothetical Strategist: ``This strategy has SNR $0.6 \yrto{-1/2}$.''\\
-	Answer: Need 
-	\Sexpr{signif(coin.flip.c / (0.6 ^ 2),digits=2)} years of data to backtest. (!)
-	\item Hypothetical Investor: ``You have one year to prove yourself.''\\
-	Answer: Strategy must have SNR $\ge \Sexpr{signif(sqrt(coin.flip.c / 1),digits=2)} \yrto{-1/2}$.
-\end{itemize}
-
-\end{frame}
-%UNFOLD
-%abbreviated version. still too long. fuck it.
-%\begin{frame}[allowframebreaks]{Power and Sample Size}%FOLDUP
-%Power: Relation between sample size, effect size (SNR), and rates of 
-%false positives and false negatives. ``Do I have enough data or alpha?''
-%\begin{alertblock}{rule of thumb for Sharpe power}
-%To test SNR $> 0$, with 0.05 type I rate, and 50 \% power, 
-%$$\ssiz \approx \frac{\Sexpr{signif(coin.flip.c,digits=3)}}{\psnrsq}.\qquad\mbox{mnemonic form: }e \approx \ssiz\psnrsq$$
-%\end{alertblock}
-
-%This rule is sobering:
-%\begin{itemize}
-	%%\item Hypothetical Vendor: ``I have three years of historical data.''\\
-	%%Answer: Strategy must have SNR 
-	%%$\ge \Sexpr{signif(sqrt(coin.flip.c / 3),digits=2)} \yrto{-1/2}$.
-	%\item Hypothetical Strategist: ``This strategy has SNR $0.7 \yrto{-1/2}$.''\\
-	%Rule: Need 
-	%\Sexpr{signif(coin.flip.c / (0.7 ^ 2),digits=2)} years of data to backtest. (!)
-	%\item Hypothetical Investor: ``You have one year to prove yourself.''\\
-	%Rule: Strategy must have SNR $\ge \Sexpr{signif(sqrt(coin.flip.c / 1),digits=2)} \yrto{-1/2}$.
-%\end{itemize}
-
-%\end{frame}
-%%UNFOLD
 
 \begin{frame}{Delta Hotelling}%FOLDUP
 
