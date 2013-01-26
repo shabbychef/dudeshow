@@ -4,7 +4,7 @@ source("knitr_opts.R")
 source("defs.R")
 @
 
-<<'skewstudy',echo=FALSE,print=FALSE,message=FALSE>>=
+<<'skewstudy'>>=
 
 require(xtable)
 
@@ -83,7 +83,7 @@ xres <- xtable(res,label="tab:sharpe_skew_robustness",
 														 " simulations of three years of daily returns, with a nominal rate of $\\typeI = 0.05$. Skew appears to have a much more adverse effect than kurtosis alone."))
 @
 
-<<'skewtable',echo=FALSE,print=TRUE,message=FALSE,warning=FALSE,results="asis">>=
+<<'skewtable',print=TRUE,results="asis">>=
 
 print(xres,include.rownames=FALSE)
 

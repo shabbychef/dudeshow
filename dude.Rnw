@@ -27,7 +27,7 @@ LONG.FORM <- FALSE
 %2FIX: put a header here.
 
 \typeout{-- dude.tex}
-\typeout{-- NC 2011-2012 s.e.p.}
+\typeout{-- NC 2011-2013 s.e.p.}
 \typeout{-- SVNId: $Id: proj_name.tex 89 2011-01-26 20:59:08Z astrawman $}
 
 %TODO
@@ -53,7 +53,7 @@ LONG.FORM <- FALSE
 
 
 \usepackage[today,nofancy]{svninfo}
-\svnInfo $Id: dude.Rnw 01 2012-05-11 20:59:08Z astrawman $
+\svnInfo $Id: dude.Rnw 01 2013-02-08 20:59:08Z astrawman $
 
 %\usepackage{alg}
 %\floatstyle{boxed}
@@ -135,7 +135,7 @@ LONG.FORM <- FALSE
 
 \begin{frame}{Would you rather?}%FOLDUP
 
-<<'wyrather',include=FALSE,fig=TRUE,dev=c("cairo_ps","pdf")>>=
+<<'wyrather',include=FALSE,fig=TRUE>>=
 nyr <- 5
 epy <- 253
 nobs <- ceiling(nyr * epy)
@@ -261,7 +261,7 @@ So \ssr[*] can be used to perform inference on \psnr[*]!
 %UNFOLD
 
 % USAGE of vanilla Hotelling%FOLDUP
-<<'vanillaT',echo=FALSE,print=FALSE,warning=FALSE,message=FALSE>>=
+<<'vanillaT'>>=
 library(fPortfolio)
 
 lr.to.rr <- function(lr) {
@@ -448,7 +448,7 @@ distribution depends on nuisance parameter \pvsig. \cite{Silvapulle1996137,Sen19
 %%generate the rauto.bib bitex file%FOLDUP
 %see also
 %http://r.789695.n4.nabble.com/Automating-citations-in-Sweave-td872079.html
-<<'gen_bibliography',echo=FALSE,print=FALSE,warning=FALSE,message=FALSE>>=
+<<'gen_bibliography'>>=
 FID <- file("rauto.bib", "w")  # open an output file connection
 
 cite.by.name <- function(x){ 
@@ -476,7 +476,7 @@ close(FID)
 \input{skew_study_show}
 \end{frame}%UNFOLD
 
-<<'t_power_rules_brief',echo=FALSE,print=FALSE>>=
+<<'t_power_rules_brief'>>=
 rhovals <- seq(0.5,3.0,by=0.10)
 rhovals_day <- rhovals / sqrt(dpy)
 # 1-sided test
@@ -501,7 +501,7 @@ $$\ssiz \approx \frac{\tpowc}{\psnrsq},$$
 with \tpowc a function of type I and type II rates, \etc
 \cite{vanBelle2002_STRUTs,Johnson:1940}
 
-<<'t_power_rules',echo=FALSE,print=TRUE,message=FALSE,warning=FALSE,results="asis">>=
+<<'t_power_rules',print=TRUE,results="asis">>=
 require(xtable)
 rhovals <- seq(0.5,3.0,by=0.10)
 rhovals_day <- rhovals / sqrt(dpy)

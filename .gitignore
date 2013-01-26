@@ -32,3 +32,6 @@ cache/
 figure/*.pdf
 figure/*.eps
 
+# the final result
+dude.pdf
+

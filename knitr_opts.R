@@ -6,14 +6,12 @@
 require(knitr)
 
 # set the knitr options ... for everyone!
-opts_knit$set(echo=FALSE)
-opts_knit$set(eps=TRUE)
-opts_knit$set(warning=FALSE)
-opts_knit$set(message=FALSE)
-opts_knit$set(cache=TRUE)
-opts_knit$set(cache.path="cache/")
-opts_knit$set(results="asis")
-opts_knit$set(fig.ext="eps")
-opts_knit$set(fig.path="figure/")
-opts_knit$set(dev=c("pdf","cairo_ps"))
+opts_knit$set(progress=TRUE)
+
+opts_chunk$set(echo=FALSE,warning=FALSE,message=FALSE,print=FALSE)
+opts_chunk$set(results="asis")
+opts_chunk$set(cache=TRUE,cache.path="cache/")
+opts_chunk$set(fig.path="figure/",dev=c("pdf","cairo_ps"))
+#opts_knit$set(eps=TRUE)
+
 

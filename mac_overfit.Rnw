@@ -13,7 +13,7 @@ FINAL.VERSION <- TRUE
 @
 
 % MAC fit stuff%FOLDUP
-<<'macfit',echo=FALSE,print=FALSE>>=
+<<'macfit'>>=
 library(TTR)
 
 ary.tstat <- function(rets,co.dim) {
