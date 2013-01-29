@@ -11,9 +11,12 @@
 % meta meta commands
 % emptyP if 1 is empty give 2 else give 3
 %\providecommand{\mtP}[3]{\ifx\@empty#1\@empty#2\else#3\fi}
-\def\mtP#1#2#3{\ifx\@empty#1\@empty#2\else#3\fi}
+%\def\mtP#1#2#3{\ifx\@empty#1\@empty#2\else#3\fi}
+%\def\mtP#1#2#3{\ifx\@empty\detokenize{#1}\@empty#2\else#3\fi}
+\def\mtP#1#2#3{\if\relax\detokenize{#1}\relax#2\else#3\fi}
 % listmore if 1 is empty give 1 else give `,1'
-\def\lMr#1{\ifx\@empty#1\@empty\relax\else{,#1}\fi}
+%\def\lMr#1{\ifx\@empty#1\@empty\relax\else{,#1}\fi}
+\def\lMr#1{\ifx\@empty\detokenize{#1}\@empty\relax\else{,#1}\fi}
 
 \providecommand{\MATHIT}[1]{\ensuremath{#1}\xspace}
 \providecommand{\neUL}[3]{\mtP{#2}{\mtP{#3}{#1}{{#1}_{#3}}}{\mtP{#3}{{#1}^{#2}}{{#1}^{#2}_{#3}}}}
@@ -23,6 +26,8 @@
 \providecommand{\wrapParens}[1]{\left(#1\right)}
 \providecommand{\wrapBraces}[1]{\left\{#1\right\}}
 \providecommand{\wrapBracks}[1]{\left[#1\right]}
+
+%\providecommand{\wrapNeParens}[1]{\if\relax\detokenize{#1}\relax\else\wrapParens{#1}\fi}
 
 \providecommand{\wrapNeParens}[1]{\mtP{#1}{}{\wrapParens{#1}}}
 \providecommand{\wrapNeBraces}[1]{\mtP{#1}{}{\wrapBraces{#1}}}
@@ -40,13 +45,14 @@
 \providecommand{\VAR}[1]{\ensuremath{\operatorname{var}\wrapNeParens{#1}}}
 \providecommand{\mathUL}[3]{\MATHIT{\neUL{#1}{#2}{#3}}}
 \providecommand{\mathSUP}[2]{\MATHIT{\neSUP{#1}{#2}}}
-\providecommand{\E}[1]{\ensuremath{\operatorname{E}\left[#1\right]}}
 \providecommand{\vectUL}[3]{\mathUL{\vect{#1}}{#2}{#3}}
 \providecommand{\SEPbbb}[1]{\mathbb{#1}}
 \providecommand{\reals}[1]{\ensuremath{\SEPbbb{R}^{#1}}}
 
 \providecommand{\eg}{\emph{e.g.},\xspace}
 \providecommand{\ie}{\emph{i.e.},\xspace}
+\providecommand{\nb}{\emph{n.b.},\xspace}
+\providecommand{\iid}{\emph{i.i.d.},\xspace}
 \providecommand{\etc}{\emph{etc.}\xspace}
 \providecommand{\cf}{\emph{cf.}\xspace}
 
@@ -115,6 +121,14 @@
 \providecommand{\prvsymPBT}{P}
 \providecommand{\prvsymRLR}{R}
 %UNFOLD
+
+% prices/mtm
+\providecommand{\pryt}[1][t]{\mathSUB{p}{#1}}
+\providecommand{\grett}[1][t]{\mathSUB{l}{#1}}
+\providecommand{\arett}[1][t]{\mathSUB{r}{#1}}
+
+\renewcommand{\exp}[1]{\ensuremath{e^{#1}}}
+\providecommand{\longexp}[1]{\ensuremath{\operatorname{exp}\wrapNeParens{#1}}}
 
 %scalar returns:
 \providecommand{\reti}[1][]{\mathSUB{\prvsymi}{#1}}
@@ -277,6 +291,7 @@
 %population parameters%FOLDUP
 \providecommand{\pmu}[1][]{\mathSUB{\mu}{#1}}
 \providecommand{\psig}[1][]{\mathSUB{\sigma}{#1}}
+\providecommand{\psigsq}[1][]{\mathUL{\sigma}{2}{#1}}
 
 \providecommand{\psrUL}[2]{\mathUL{\psi}{#1}{#2}}
 
@@ -388,6 +403,8 @@
 
 % time commands; change the default!?
 \providecommand{\yrto}[1]{\mathSUP{\mbox{yr}}{#1}}
+\providecommand{\moto}[1]{\mathSUP{\mbox{mo.}}{#1}}
+\providecommand{\qto}[1]{\mathSUP{\mbox{Q}}{#1}}
 \providecommand{\dayto}[1]{\mathSUP{\mbox{day}}{#1}}
 
 %linear regression: population and sample%FOLDUP
@@ -428,7 +445,8 @@
 
 \providecommand{\median}[1]{\funcit{\mbox{median}}{#1}}
 \providecommand{\Pr}[1]{\funcit{\mbox{\large P}}{#1}}
-\providecommand{\E}[1]{\funcit{\mbox{\large E}}{#1}}
+\providecommand{\E}[1]{\MATHIT{\mbox{\large E}\wrapNeBracks{#1}}}
+%\providecommand{\E}[1]{\ensuremath{\operatorname{E}\left[#1\right]}}
 \providecommand{\VAR}[1]{\funcit{\mbox{Var}}{#1}}
 \providecommand{\GAM}[1]{\MATHIT{\Gamma\wrapNeParens{#1}}}
 \providecommand{\skewness}[1]{\funcit{\mbox{skew}}{#1}}
