@@ -333,6 +333,7 @@ abline(v=0,col='gray',lty=2)
 
 %UNFOLD
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Statistics of Sharpe Ratio}%FOLDUP
 
 \begin{frame}[allowframebreaks]{Inference on Sharpe Ratio}%FOLDUP
@@ -444,6 +445,18 @@ This rule is sobering:
 
 %\end{frame}
 %%UNFOLD
+
+\begin{frame}{The Quant's Lament}
+\vspace{-0.35in}
+\begin{figure}[htbp!]
+  \begin{center}
+		\includegraphics[width=2.5in]{figure/Curve_fitting}
+		\caption{Courtesy Automated Trader magazine.}
+		\label{fig:overfit}
+	\end{center}
+\end{figure}
+\vspace{-0.20in}
+\end{frame}
 %UNFOLD
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
