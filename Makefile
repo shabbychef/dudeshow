@@ -308,7 +308,7 @@ default : all
 ############### RULES ###############
 
 # an easy target
-all: $(DVI_TARGET) $(BBLS) figure/Curve_fitting.jpg
+all: $(DVI_TARGET) $(BBLS) figure/Curve_fitting.eps
 
 ratarb: ratarb.dvi $(BBLS)
 
@@ -367,6 +367,9 @@ show_extras: $(SHOW_EPS)
 figure/Curve_fitting.jpg :
 	#wget -O $@ "http://www.automatedtrader.net/Files/images/Mags/Issue_04_Jan_07/Strategies/Curve%20fitting.jpg"
 	wget -O $@ "www.imgur.com/5oOkkSR.jpg"
+
+figure/Curve_fitting.eps : figure/Curve_fitting.jpg
+	convert $^ $@
 
 ######################
 ######################
