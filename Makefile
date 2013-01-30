@@ -308,7 +308,7 @@ default : all
 ############### RULES ###############
 
 # an easy target
-all: $(DVI_TARGET) $(BBLS)  
+all: $(DVI_TARGET) $(BBLS) figure/Curve_fitting.jpg
 
 ratarb: ratarb.dvi $(BBLS)
 
@@ -361,6 +361,12 @@ show_extras: $(SHOW_EPS)
 .tags :
 	nice -n 18 ctags -f .tmp_tags --recurse --language-force=R --fields=+i `find . -regextype posix-egrep -regex '.*.R(nw)?'`;
 	mv .tmp_tags $@
+
+############# ONE OFFS ##############
+
+figure/Curve_fitting.jpg :
+	#wget -O $@ "http://www.automatedtrader.net/Files/images/Mags/Issue_04_Jan_07/Strategies/Curve%20fitting.jpg"
+	wget -O $@ "www.imgur.com/5oOkkSR.jpg"
 
 ######################
 ######################

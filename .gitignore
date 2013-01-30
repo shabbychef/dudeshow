@@ -31,6 +31,7 @@ rauto.bib
 cache/
 figure/*.pdf
 figure/*.eps
+figure/*.jpg
 
 # the final result
 dude.pdf
