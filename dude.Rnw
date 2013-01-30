@@ -331,6 +331,32 @@ abline(v=0,col='gray',lty=2)
 \end{frame}
 %UNFOLD
 
+%UNFOLD
+
+\section{Statistics of Sharpe Ratio}%FOLDUP
+
+\begin{frame}[allowframebreaks]{Inference on Sharpe Ratio}%FOLDUP
+\begin{itemize}
+\item SR is actually a biased estimator of SNR:\cite{CambridgeJournals:4493808}
+$$
+\E{\ssr} = \sqrt{\frac{\ssiz-1}{2}}\frac{\GAM{(\ssiz-2)/2}}{\GAM{(\ssiz-1)/2}} \psr = \frac{1}{c_4}\psr.
+$$
+Though the bias is small ($\le \Sexpr{signif(100 * (f_tbias(100-1)-1),digits=2)} \%$ when $\ssiz \ge 100$).
+\item Standard error assuming normal returns: \cite{walck:1996,lo2002,Johnson:1940}
+$$
+s.e. = \sqrt{\frac{1 + \frac{\psrsq}{2}}{\ssiz - 1}}
+\approx \sqrt{\frac{1 + \frac{\ssrsq}{2}}{\ssiz - 1}}
+\approx \sqrt{\frac{1}{\ssiz}}.
+$$
+The latter annualizes as you would expect.
+\\Rule of thumb: $\abs{\psr - \ssr} \le \frac{2}{\sqrt{\ssiz}}$, with probability $\approx 0.95$.
+%\break
+\item Fixes for heteroskedasticity, autocorrelation, skew.
+\cite{vanBelle2002_STRUTs,lo2002,Opdyke2007}
+(Typically these bias \ssr by $< 10\%$)
+\end{itemize}
+\end{frame}%UNFOLD
+
 <<'t_power_rules_brief'>>=
 rhovals <- seq(0.5,3.0,by=0.10)
 rhovals_day <- rhovals / sqrt(dpy)
