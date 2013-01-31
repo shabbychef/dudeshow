@@ -35,6 +35,10 @@ rr2lr <- function(x) {
 	retval <- log(1+x)
 	return(retval)
 }
+lr2rr <- function(x) { 
+	retval <- exp(x) - 1
+	return(retval)
+}
 subsrs <- apply(rr2lr(subrr[,c("smb","hml","mktrf","umd")]),2,f_asharpe)
 @
 
@@ -260,9 +264,7 @@ The `Student Ratio'?
 Avoid ambiguity and \emph{always} include units.
 \item \nb $1\yrto{-1/2} = \frac{1}{2}\qto{-1/2} = \frac{1}{\sqrt{12}}\moto{-1/2} = \frac{1}{\sqrt{253}}\dayto{-1/2}$
 \item For equities quant strategies, achieved SR translates as:
-$1\yrto{-1/2} \Rightarrow \mbox{good}$,
-$2\yrto{-1/2} \Rightarrow \mbox{excellent}$,
-$3\yrto{-1/2} \Rightarrow \mbox{legend}$.\\
+$1\yrto{-1/2} \Rightarrow \mbox{``good''}, 2\yrto{-1/2} \Rightarrow \mbox{``great''}, 3\yrto{-1/2} \Rightarrow \mbox{``legend''}.$\\
 In HFT, higher SR the norm, but large fixed costs (like \rfr).
 
 \break
@@ -274,6 +276,7 @@ prs <- pnorm(- srs,lower.tail=TRUE)
 
 \item Cantelli's Inequality gives:
 $$\Pr{\mbox{negative return on period}} \le \frac{1}{1 + {\psnr}^2}$$
+(Often more natural to consider $\psrUL{2}{}, \ssrUL{2}{}$.)
 \item Another view: a year-on-year loss is a ``\psnr sigma event''.\\
 Central Limit Theorem: If returns are well behaved, 
 enough gambles are made, annual return will be nearly normal.
@@ -284,11 +287,56 @@ enough gambles are made, annual return will be nearly normal.
 \psnr = \Sexpr{srs[4]}\yrto{-1/2} &\Rightarrow \Pr{\mbox{down year}} = \Sexpr{signif(100 * prs[4],digits=2)}\mbox{\%}
 \end{align*}
 %2FIX: How does this translate to quarters?
-\item Often more natural to consider $\psrUL{2}{}, \ssrUL{2}{}$.
 
 \end{itemize}
 \end{frame}
 %UNFOLD
+
+\begin{frame}{Wait, I Want Returns}%FOLDUP
+
+<<'ddown_connection'>>=
+source("drawdown.R")
+epy <- 253
+
+x.psis <- seq(0,2.5/sqrt(epy),length.out=32)
+dprob <- 0.975
+
+gen.per <- ifelse(FINAL.VERSION,2^18,2^15)
+
+y.dds <- sapply(x.psis,function(sr) { 
+	zzz <- rdd(gen.per,epy,sr,tgen)
+	retval <- quantile(zzz,probs=dprob,type=7)[[1]]
+})
+
+@
+
+<<'ddown_plot',include=FALSE,fig=TRUE>>=
+
+# in percent
+ddown.max <- 33
+x.psi.pa <- sqrt(epy) * x.psis
+y.mxv <- - log(1 - (ddown.max/100)) / y.dds
+y.mxv.pa <- sqrt(epy) * y.mxv
+y.mxv.pretty <- 100 * lr2rr(y.mxv.pa)
+
+plot(x.psi.pa,y.mxv.pretty,xlab="S.R. (yr^{-1/2})",ylab="max volatility (% yr^{-1/2})",type='p',col='blue')
+abline(lm(y.mxv.pretty ~ x.psi.pa))
+
+@
+Idea: lever up until volatility ``too high.'' Set this by a drawdown cap. Sharpe Ratio limits drawdowns.
+\vspace{-0.35in}
+\begin{figure}[htbp]
+  \begin{center}
+		\includegraphics[width=2.0in]{figure/ddown_plot}
+		\caption{Maximum volatility (percent per root year) so that probability of a \Sexpr{ddown.max} \%
+			drawdown over a year is \Sexpr{100 * (1-dprob)}\% or less. Assumes independence, homoskedasticity,
+			mild kurtosis.}
+		\label{fig:ddown}
+	\end{center}
+\end{figure}
+\vspace{-0.20in}
+
+\end{frame}%UNFOLD
 
 \begin{frame}{Diversification and Sharpe Ratio}%FOLDUP
 \begin{itemize}
@@ -308,22 +356,38 @@ Avoid strategies correlated to the `retail alpha'.
 
 \begin{frame}{Diversification vs Correlation}%FOLDUP
 
+<<'testit',include=FALSE,fig=TRUE>>=
+@
+
 <<'divandcorr',include=FALSE,fig=TRUE>>=
-snr1 <- 1 / sqrt(2)
-snr2 <- snr1
-corrs <- seq(from=-0.5,to=0.5,length.out=1001)
+#snr1 <- 1 / sqrt(2)
+#snr2 <- snr1
+#corrs <- seq(from=-0.5,to=0.5,length.out=1001)
+
+snr1 <- 0.5
+snr2 <- sqrt(1 - snr1^2)
+corrs <- seq(from=-0.5,to=0.95,length.out=1001)
 snrs <- sqrt((snr1^2 + snr2^2 - 2*corrs*snr1*snr2) / (1-corrs^2))
+# where does the snrstar 'bottom out'?
+corr.worst <- min(snr1/snr2,snr2/snr1)
+snrboo <- sqrt((snr1^2 + snr2^2 - 2*corr.worst*snr1*snr2) / (1-fooz^2))
+#snrboo - max(snr1,snr2)
+corr.bpoint <- 2*snr1*snr2 / (sum(c(snr1,snr2)^2))
 
 plot(corrs,snrs,xlab="correlation",ylab="optimal SNR",type='l',col='green')
-abline(h=1,col='gray',lty=2)
+abline(h=norm(matrix(c(snr1,snr2)),"2"),col='gray',lty=2)
 abline(v=0,col='gray',lty=2)
+abline(h=max(snr1,snr2),col='gray',lty=2)
+abline(v=corr.worst,col='gray',lty=2)
+abline(v=corr.bpoint,col='gray',lty=2)
 @
 \vspace{-0.35in}
 \begin{figure}[htbp]
   \begin{center}
 		\includegraphics[width=2.5in]{figure/divandcorr}
-		\caption{Given two strategies with $\psnr[i] = \Sexpr{signif(snr1,digits=2)}\yrto{-1/2}$,
-		\psnr[*] is plotted versus $\rho$.}
+		\caption{\psnr[*] is plotted versus $\rho$ for
+			$\psnr[1] = \Sexpr{signif(snr1,digits=2)}\yrto{-1/2}, \psnr[2] = \Sexpr{signif(snr2,digits=2)}\yrto{-1/2}$.
+			It is possible to get \emph{no} diversification benefit beyond best strategy.}
 		\label{fig:divandcorr}
 	\end{center}
 \end{figure}
@@ -338,7 +402,7 @@ abline(v=0,col='gray',lty=2)
 
 \begin{frame}[allowframebreaks]{Inference on Sharpe Ratio}%FOLDUP
 \begin{itemize}
-\item SR is actually a biased estimator of SNR:\cite{CambridgeJournals:4493808}
+\item SR is actually a \emph{biased} estimator of SNR:\cite{CambridgeJournals:4493808}
 $$
 \E{\ssr} = \sqrt{\frac{\ssiz-1}{2}}\frac{\GAM{(\ssiz-2)/2}}{\GAM{(\ssiz-1)/2}} \psr = \frac{1}{c_4}\psr.
 $$
@@ -351,10 +415,15 @@ s.e. = \sqrt{\frac{1 + \frac{\psrsq}{2}}{\ssiz - 1}}
 $$
 The latter annualizes as you would expect.
 \\Rule of thumb: $\abs{\psr - \ssr} \le \frac{2}{\sqrt{\ssiz}}$, with probability $\approx 0.95$.
-%\break
+
+\break
+
 \item Fixes for heteroskedasticity, autocorrelation, skew.
 \cite{vanBelle2002_STRUTs,lo2002,Opdyke2007}
 (Typically these bias \ssr by $< 10\%$)
+\item Bigger problem is ``omitted variable bias'' \ie ``something changed in the world.''\\
+Hard to quantify: ``unknown unknowns.''
+
 \end{itemize}
 \end{frame}%UNFOLD
 
@@ -451,7 +520,8 @@ This rule is sobering:
 \begin{figure}[htbp!]
   \begin{center}
 		\includegraphics[width=2.5in]{figure/Curve_fitting}
-		\caption{Courtesy Automated Trader magazine.}
+		\caption{blah blah blah.\relax\break
+			{\scriptsize (Courtesy Automated Trader magazine.)}}
 		\label{fig:overfit}
 	\end{center}
 \end{figure}

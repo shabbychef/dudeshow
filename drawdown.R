@@ -39,42 +39,43 @@ rdd <- function(n,nper,sr=0,generator=NULL) {
 	return(retval)
 }
 
-for (sr in seq(0.1,0.4,by=0.1)) {
-	zzz <- rdd(1024,253,sr)
-	print(quantile(zzz,probs=0.975,type=7))
-}
-
 tgen <- function(n,sr,df=4) { 
 	sr + sqrt((df-2)/df) * rt(n,df) 
 }
-for (sr in seq(0.1,0.4,by=0.1)) {
-	zzz <- rdd(1024,253,sr,tgen)
-	print(quantile(zzz,probs=0.975,type=7))
-}
+
+#for (sr in seq(0.1,0.4,by=0.1)) {
+	#zzz <- rdd(1024,253,sr)
+	#print(quantile(zzz,probs=0.975,type=7))
+#}
+
+#for (sr in seq(0.1,0.4,by=0.1)) {
+	#zzz <- rdd(1024,253,sr,tgen)
+	#print(quantile(zzz,probs=0.975,type=7))
+#}
 
 
-# compute the 97.5% upper quantile of the prediction
-# interval on max drawdown, as a factor of # sds
-# versus sr
+## compute the 97.5% upper quantile of the prediction
+## interval on max drawdown, as a factor of # sds
+## versus sr
 
-srx <- seq(0,2.5/sqrt(253),length.out=32)
-sry <- sapply(srx,function(sr) { 
-	zzz <- rdd(2^18,253,sr,tgen)
-	retval <- quantile(zzz,probs=0.975,type=7)[[1]]
-})
+#srx <- seq(0,2.5/sqrt(253),length.out=32)
+#sry <- sapply(srx,function(sr) { 
+	#zzz <- rdd(2^18,253,sr,tgen)
+	#retval <- quantile(zzz,probs=0.975,type=7)[[1]]
+#})
 
-plot(srx,1/sry)
-yfit <- lm(1/sry ~ srx)
-summary(yfit)
-abline(yfit)
+#plot(srx,1/sry)
+#yfit <- lm(1/sry ~ srx)
+#summary(yfit)
+#abline(yfit)
 
-srg <- sapply(srx,function(sr) { 
-	zzz <- rdd(2^14,253,sr)
-	retval <- quantile(zzz,probs=0.975,type=7)[[1]]
-})
-summary(lm(1/srg ~ srx))
+#srg <- sapply(srx,function(sr) { 
+	#zzz <- rdd(2^14,253,sr)
+	#retval <- quantile(zzz,probs=0.975,type=7)[[1]]
+#})
+#summary(lm(1/srg ~ srx))
 
-plot(srx,sry-srg)
+#plot(srx,sry-srg)
 
 
 
