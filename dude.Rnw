@@ -68,6 +68,11 @@ subsrs <- apply(rr2lr(subrr[,c("smb","hml","mktrf","umd")]),2,f_asharpe)
 
 \lstset{frame=topline,float=tbph,tabsize=2,numbers=left}
 
+% here I go:
+% http://www.ctan.org/tex-archive/graphics/pgf/base/doc/generic/pgf/pgfmanual.pdf
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
 
 \usepackage[today,nofancy]{svninfo}
 \svnInfo $Id: dude.Rnw 01 2013-02-08 20:59:08Z astrawman $
@@ -421,10 +426,23 @@ The latter annualizes as you would expect.
 \item Fixes for heteroskedasticity, autocorrelation, skew.
 \cite{vanBelle2002_STRUTs,lo2002,Opdyke2007}
 (Typically these bias \ssr by $< 10\%$)
-\item Bigger problem is ``omitted variable bias'' \ie ``something changed in the world.''\\
-Hard to quantify: ``unknown unknowns.''
-
+\item Bigger problem is omitted variable bias \ie ``something changed in the world.''
+The ``unknown unknowns.''
+\item Even bigger problem: how do you set the type I rate? The incidence rate of profitable
+strategies is unknown:
 \end{itemize}
+
+\begin{center}
+\begin{tabular}{|l||c|c|}\hline
+	what & profitable ($\irate$) & not profitable ($1 - \irate$)\\\hline
+	reject null &  $\irate (1-\typeII)$ & $(1-\irate) \typeI$ \\
+	fail to reject & $\irate \typeII$ & $(1-\irate) (1 - \typeI)$ \\\hline
+\end{tabular}
+%$$\mbox{thus,}\quad\mbox{FDR} \ge 1 - \frac{\irate}{2\irate + \typeI} \approx 1 - \frac{\irate}{\typeI}.$$
+$$\mbox{thus,}\quad\mbox{FDR} \gtrsim 1 - \frac{\irate}{\typeI}.$$
+\end{center}
+
+
 \end{frame}%UNFOLD
 
 <<'t_power_rules_brief'>>=
@@ -514,6 +532,102 @@ This rule is sobering:
 
 %\end{frame}
 %%UNFOLD
+
+
+\begin{frame}[allowframebreaks]{What do Quants do?}
+
+% Define block styles
+\tikzstyle{decision} = [diamond, draw, fill=blue!20, 
+    text width=4.5em, text badly centered, node distance=3.3cm, inner sep=0pt]
+\tikzstyle{block} = [rectangle, draw, fill=blue!20, 
+    text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, -latex']
+\tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3.3cm,
+    minimum height=2em]
+    
+\begin{center}%FOLDUP
+	How it is supposed to happen:
+	\vspace{0.20in}
+
+	%\resizebox{0.35 \linewidth}{!}{%
+	\scalebox{0.45}{%
+		\begin{tikzpicture}[node distance = 3.3cm, auto]
+			% Place nodes
+			\node [block] (test) {backtest a strategy.};
+			\node [decision, below of=test] (decide) {pass statistical tests?};
+			\node [block, below of=decide] (giveup) {become an accountant.};
+			\node [block, right of=decide] (trade) {trade it.};
+			\node [block, below of=trade] (profit) {profit.};
+			% Draw edges
+			\path [line] (test) -- (decide);
+			\path [line] (decide) -- node{yes} (trade);
+			\path [line] (decide) -- node{no} (giveup);
+			\path [line] (trade) -- (profit);
+		\end{tikzpicture}
+	}%
+\end{center}%UNFOLD
+
+\break
+
+\begin{center}%FOLDUP
+	Or even this:
+	\vspace{0.20in}
+
+	%\resizebox{0.35 \linewidth}{!}{%
+	\scalebox{0.45}{%
+		\begin{tikzpicture}[node distance = 3.3cm, auto]
+			% Place nodes
+			\node [block] (test) {backtest many strategies.};
+			\node [block, below of=test] (mht) {apply Bonferroni correction.};
+			\node [decision, below of=mht] (decide) {pass statistical tests?};
+			\node [block, below of=decide] (giveup) {become an accountant.};
+			\node [block, right of=decide] (trade) {trade it.};
+			\node [block, below of=trade] (profit) {profit.};
+			% Draw edges
+			\path [line] (test) -- (mht);
+			\path [line] (mht) -- (decide);
+			\path [line] (decide) -- node{yes} (trade);
+			\path [line] (decide) -- node{no} (giveup);
+			\path [line] (trade) -- (profit);
+		\end{tikzpicture}
+	}%
+\end{center}%UNFOLD
+
+\break
+
+\begin{center}%FOLDUP
+	How it typically happens:
+	\vspace{0.20in}
+
+	%\resizebox{0.35 \linewidth}{!}{%
+	\scalebox{0.45}{%
+		\begin{tikzpicture}[node distance = 3.3cm, auto]
+			% Place nodes
+			\node [block] (test) {backtest many strategies.};
+			\node [block, below of=test] (mht) {apply Bonferroni correction.};
+			\node [decision, below of=mht] (decide) {pass statistical tests?};
+			\node [block, below of=decide] (refine) {refine!};
+			% invisible node helpful later
+			\node[left of=mht,scale=0.05] (inv) {};
+
+			\node [block, right of=decide] (trade) {trade it.};
+			\node [block, below of=trade] (profit) {profit (?)};
+			% Draw edges
+			\path [line] (test) -- (mht);
+			\path [line] (mht) -- (decide);
+			\path [line] (decide) -- node{yes} (trade);
+			\path [line] (decide) -- node{no} (refine);
+			\path [line] (trade) -- (profit);
+			% \path [line] (refine) -| (test);
+      \path[-,draw] (refine) -| node{} (inv);
+      \path[line] (inv) |- (test);
+		\end{tikzpicture}
+	}%
+\end{center}%UNFOLD
+
+\end{frame}
+
+
 
 \begin{frame}{The Quant's Lament}
 \vspace{-0.35in}
