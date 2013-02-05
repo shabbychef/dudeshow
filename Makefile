@@ -168,9 +168,8 @@ default : all
 		$(PRETEX) $(PDFLATEX) $<
 		if grep Citation $*.log > /dev/null; then $(PREBIB) $(BIBTEX) $*; $(PRETEX) $(PDFLATEX) $*; fi
 
-
 # compile and convert
-%.dvi : %.tex $(STY_FILES)
+%.dvi : %.tex $(STY_FILES) 
 		$(PRETEX) $(LATEX) $<
 		if grep Citation $*.log > /dev/null; then $(PREBIB) $(BIBTEX) $*; $(PRETEX) $(LATEX) $*; fi
 		if grep Rerun $*.log > /dev/null; then $(PRETEX) $(LATEX) $*; fi
@@ -308,7 +307,7 @@ default : all
 ############### RULES ###############
 
 # an easy target
-all: $(DVI_TARGET) $(BBLS) figure/Curve_fitting.eps
+all: $(DVI_TARGET) $(BBLS) figure/Curve_fitting.eps 
 
 ratarb: ratarb.dvi $(BBLS)
 
