@@ -19,9 +19,7 @@ source("defs.R")
 compile.time <- Sys.time()
 
 # compiler flags!
-
-#FINAL.VERSION <- TRUE
-FINAL.VERSION <- FALSE
+# some moved to defs.R
 
 # not used yet
 LONG.FORM <- FALSE
@@ -54,6 +52,9 @@ subsrs <- apply(rr2lr(subrr[,c("smb","hml","mktrf","umd")]),2,f_asharpe)
 
 %to make wikipedia bibtex entries happy
 \usepackage{url}
+% colored tables.
+\usepackage{xcolor,colortbl}
+%\usepackage[table]{xcolor}
 
 %\usepackage{psfig}\psfull
 %\usepackage{graphicx,epsfig,psfrag}
@@ -136,8 +137,8 @@ subsrs <- apply(rr2lr(subrr[,c("smb","hml","mktrf","umd")]),2,f_asharpe)
 \author[Steven E. Pav]{Steven E. Pav \\ \texttt{steven@cerebellumcapital.com}}
 \institute{Cerebellum Capital}
 %\date{\today}
-%\date[UCSF 2013]{\Sexpr{format(compile.time,'%Y-%m-%d')}}
-\date[\Sexpr{format(compile.time,'%Y-%m-%d')}]{UCSF \Sexpr{format(compile.time,'%Y-%m-%d')}}
+%\date[USF 2013]{\Sexpr{format(compile.time,'%Y-%m-%d')}}
+\date[\Sexpr{format(compile.time,'%Y-%m-%d')}]{USF \Sexpr{format(compile.time,'%Y-%m-%d')}}
 \subject{Quantitative Finance}
 %UNFOLD
 
@@ -175,7 +176,7 @@ Evaluating strategies must be hard.
 
 \begin{frame}{A Simple Example: Choose One}%FOLDUP
 
-<<'wyrather',include=FALSE,fig=TRUE>>=
+<<'wyrather',include=FALSE,fig=TRUE,out.width='6cm',out.height='4cm'>>=
 nyr <- 5
 epy <- 253
 nobs <- ceiling(nyr * epy)
@@ -397,10 +398,10 @@ $$\Pr{\mbox{negative return on period}} \le \frac{1}{1 + {\psnr}^2}$$
 Central Limit Theorem: If returns are well behaved, 
 enough gambles are made, annual return will be nearly normal.
 \begin{align*}
-\psnr = \Sexpr{srs[1]}\yrto{-1/2} &\Rightarrow \Pr{\mbox{down year}} = \Sexpr{signif(100 * prs[1],digits=2)}\mbox{\%}\\
-\psnr = \Sexpr{srs[2]}\yrto{-1/2} &\Rightarrow \Pr{\mbox{down year}} = \Sexpr{signif(100 * prs[2],digits=2)}\mbox{\%}\\
-\psnr = \Sexpr{srs[3]}\yrto{-1/2} &\Rightarrow \Pr{\mbox{down year}} = \Sexpr{signif(100 * prs[3],digits=2)}\mbox{\%}\\
-\psnr = \Sexpr{srs[4]}\yrto{-1/2} &\Rightarrow \Pr{\mbox{down year}} = \Sexpr{signif(100 * prs[4],digits=2)}\mbox{\%}
+\psnr = \Sexpr{srs[1]}\yrto{-1/2} &\Rightarrow \Pr{\mbox{down year}} \approx \Sexpr{signif(100 * prs[1],digits=2)}\mbox{\%}\\
+\psnr = \Sexpr{srs[2]}\yrto{-1/2} &\Rightarrow \Pr{\mbox{down year}} \approx \Sexpr{signif(100 * prs[2],digits=2)}\mbox{\%}\\
+\psnr = \Sexpr{srs[3]}\yrto{-1/2} &\Rightarrow \Pr{\mbox{down year}} \approx \Sexpr{signif(100 * prs[3],digits=2)}\mbox{\%}\\
+\psnr = \Sexpr{srs[4]}\yrto{-1/2} &\Rightarrow \Pr{\mbox{down year}} \approx \Sexpr{signif(100 * prs[4],digits=2)}\mbox{\%}
 \end{align*}
 %2FIX: How does this translate to quarters?
 
@@ -491,25 +492,21 @@ The latter annualizes as you would expect.
 \item Fixes for heteroskedasticity, autocorrelation, skew.
 \cite{vanBelle2002_STRUTs,lo2002,Opdyke2007}
 (Typically these bias \ssr by $< 10\%$)
-\item Bigger problem is omitted variable bias \ie ``something changed in the world.''
-The ``unknown unknowns.''
-\item Even bigger problem: how do you set the type I rate? The incidence rate of profitable
-strategies is unknown:
+\item No easy fix for omitted variable bias \ie ``something changed in the world.''
+\item Perhaps better to generalize to regression:
+$$
+\grett[t] = \alpha + \sum_i \pregco[i] \sfact[i,t] + \pserrt[t],
+$$
+with \sfact[i] returns from known benchmark strategies.
+\item Typically want no exposure to \sfact[i] because it is
+available via ETPs, 
+or one believes they are zero mean or cannot be timed.
+\item Whole literature on regression to perform inference on $\alpha$.
+Inference on $\alpha/\psig$ is less common.
 \end{itemize}
-
-\begin{center}
-\begin{tabular}{|l||c|c|}\hline
-	what & profitable ($\irate$) & not profitable ($1 - \irate$)\\\hline
-	reject null &  $\irate (1-\typeII)$ & $(1-\irate) \typeI$ \\
-	fail to reject & $\irate \typeII$ & $(1-\irate) (1 - \typeI)$ \\\hline
-\end{tabular}
-%$$\mbox{thus,}\quad\mbox{FDR} \ge 1 - \frac{\irate}{2\irate + \typeI} \approx 1 - \frac{\irate}{\typeI}.$$
-$$\mbox{thus,}\quad\mbox{FDR} \gtrsim 1 - \frac{\irate}{\typeI}.$$
-\end{center}
-
-
 \end{frame}%UNFOLD
 
+%% Sharpe POWER%FOLDUP
 <<'t_power_rules_brief'>>=
 rhovals <- seq(0.5,3.0,by=0.10)
 rhovals_day <- rhovals / sqrt(dpy)
@@ -547,7 +544,9 @@ samps80.2 <- (1/dpy) * unlist(lapply(rhovals_day, f_treqsize, alpha=0.025, powr 
 foo <- data.frame("one sided" = c(median(samps50.1 * rhovals**2),median(samps80.1 * rhovals**2)),
 									"two sided" = c(median(samps50.2 * rhovals**2),median(samps80.2 * rhovals**2)),
 									row.names = c("power = 0.50","power = 0.80"))
-xres <- xtable(foo,label="tab:ttestpower",caption="Value of \\tpowc to achieve given power in t-test, $\\typeI = 0.05$.")
+colnames(foo) <- c("one sided","two sided")
+xres <- xtable(foo,label="tab:ttestpower",
+							 caption="Value of \\tpowc to achieve given power in t-test, $\\typeI = 0.05$.")
 print(xres,include.rownames=TRUE)
 coin.flip.c <- median(samps50.1 * rhovals**2)
 hi.conf.c <- median(samps80.1 * rhovals**2)
@@ -597,14 +596,13 @@ This rule is sobering:
 
 %\end{frame}
 %%UNFOLD
-
-
+%UNFOLD
 %UNFOLD
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{QuantFail}%FOLDUP
 
-\begin{frame}[allowframebreaks]{Why do Bad Things Happen to Smart People?}
+\begin{frame}[allowframebreaks]{Why do Bad Things Happen to Smart People?}%FOLDUP
 \vspace{-0.35in}
 \begin{figure}[htbp!]
   \begin{center}
@@ -617,16 +615,59 @@ This rule is sobering:
 \vspace{-0.20in}
 
 \break
+Many explanations are offered:
 \begin{itemize}
-\item Bad backtests. (``backtest arbitrage'')
-\item Biased statistical tests.
-\item ``non-stationarity'' (\ie ``the dog ate my alpha.'')
+\item Bad backtests: inability to model costs and impact, observer effects, ``backtest arbitrage,''
+outright ``time-travelling.''
+\item Biased statistical tests. Rejecting the null for uninteresting reasons.
+\item Claims of ``non-stationarity'' (``the dog ate my alpha.'')
+\end{itemize}
+Perhaps most important:
+\begin{itemize}
+\item False positives / Excessive type I rate.
+\item Sequential model overfit.
 \end{itemize}
 
-\end{frame}
+\end{frame}%UNFOLD
 
+\begin{frame}{Setting Type I Rate}%FOLDUP
+%How to set type I rate when \irate, the incidence rate of profitable
+%strategies is unknown? Consider the outcomes:
+Consider the outcomes:
+\begin{center}
+%\rowcolors{1}{Blue}{Gray}
+\begin{tabular}{|l||c|c|}\hline
+	%\rowcolor{gray}
+	%\rowcolor{blue!10}
+	test \textbackslash \, truth  & profitable  & not profitable \\\hline
+	%\rowcolor{blue!10}
+	reject null &  \cellcolor{blue!30} win! & \cellcolor{red!40} type I error \\
+	\hline
+	%\rowcolor{blue!10}
+	fail to reject & \cellcolor{red!40} type II error & \cellcolor{blue!30} business as usual \\\hline
+\end{tabular}
+\end{center}
+\vspace{0.02in}
+Let \typeI, \typeII be the type I and II rates; let \irate be incidence rate of profitable
+strategies. Condition on test rejection:
+\vspace{0.02in}
+\begin{center}
+\begin{tabular}{|l||c|c|}\hline
+	test \textbackslash \, truth & profitable ($\irate$) & not profitable ($1 - \irate$)\\\hline
+	reject null &  \cellcolor{blue!30} $\irate (1-\typeII)$ & \cellcolor{red!40} $(1-\irate) \typeI$ \\
+	\hline
+	%\rowcolor{gray!90} 
+	fail to reject & $\irate \typeII$ & $(1-\irate) (1 - \typeI)$ \\\hline
+\end{tabular}
+%$$\mbox{thus,}\quad\mbox{FDR} \ge 1 - \frac{\irate}{2\irate + \typeI} \approx 1 - \frac{\irate}{\typeI}.$$
+\end{center}
+False Discovery Rate (FDR) is ratio of false to all positives:
+$$\mbox{FDR} \defeq \frac{(1-\irate)\typeI}{(1-\irate)\typeI + \irate(1-\typeII)} \ge 1 - \frac{\irate}{\typeI}\,\mbox{when}\,\typeII \ge \irate.$$
 
-\begin{frame}[allowframebreaks]{What do Quants do?}%FOLDUP
+Probably $\irate \ll 0.05$. But is $\irate \approx 10^{-5}?$ $\approx 10^{-10}?$ 
+\end{frame}%UNFOLD
+
+\begin{frame}[allowframebreaks]{Why does Overfit Happen?}%FOLDUP
 
 % Define block styles
 \tikzstyle{decision} = [diamond, draw, fill=blue!20, 
@@ -720,29 +761,45 @@ This rule is sobering:
 	This is totally broken.
 \end{center}%UNFOLD
 
-\end{frame}%UNFOLD
-
-\begin{frame}{Why does overfit happen?}
+\break
+Why do quants overfit? A toxic mix:
 \begin{itemize}
-
-\item There is only one history to work with.
-\item We collect data at a rate of 1 day per day.
-\item Per the power rules, you need \emph{years} of data to confirm an effect.
-\item The incidence rate is very low.
-\item Human nature to confuse noise for signal.
-\item Sloppy process.
-
+\item Failure is not an option: cannot become an accountant.
+\item The incidence rate is \emph{very} low.
+\item By power rules, you need \emph{years} of data to confirm alpha.
+\item There is only one history to work with:\\ 
+One collects data at a rate of 1 day per day.
+%\item Cross-validation is a fiction: there is ``in-sample'' and ``trading with real money.''
+%\item Human nature to confuse noise for signal.
+\item Often `refining' ideas while debugging code.
+\item Sloppy process: often not aware one is overfitting. 
+\item Data snooping tests require good
+record keeping, cannot deal with sequential overfit. 
+\cite{White:2000,Hansen:2005,SSPA:2008}
 \end{itemize}
-\end{frame}
-
-
-
+\end{frame}%UNFOLD
 %UNFOLD
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Markowitz \& Hotelling}%FOLDUP
 
-\begin{frame}{Multivariate Generalization: Hotelling \& Markowitz}%FOLDUP
+\begin{frame}{The Portfolio Problem}%FOLDUP
+\begin{itemize}
+\item Suppose you can invest in \nlatf different assets. (Stocks, ETPs, strategies, \etc)
+How do you choose a portfolio?
+\item This generalizes the discrete question, ``is this asset good or not?'' to
+the continuous ``how much shall I invest in it?''
+\item Consider the arithmetic returns \nlatf-vector, \vreti[t]. 
+Let \pvmu, \pvsig be the (vector) mean and (matrix) covariance.
+\item If \sportw is proportion of capital in each asset, return is $\tr{\sportw}\vreti[t]$.\\
+This has mean $\tr{\sportw}\pvmu$ and variance \qform{\pvsig}{\sportw}.
+The SNR is 
+$$\frac{\tr{\sportw}\pvmu}{\sqrt{\qform{\pvsig}{\sportw}}}$$
+\end{itemize}
+
+\end{frame}%UNFOLD
+
+\begin{frame}{Markowitz \& Hotellin}%FOLDUP
 
 \begin{itemize}
 \item Consider \ssiz observations of \nlatf-vector of asset returns.
@@ -925,11 +982,6 @@ Conclusion: Markowitz portfolio on S\&P sectors not recommended.\\
 \end{frame}
 %UNFOLD
 
-%UNFOLD
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Odds \& Ends}%FOLDUP
-
 \begin{frame}[allowframebreaks]{Approximation of Strategy Overfit}%FOLDUP
 Caricature of quant work:
 \begin{itemize}
@@ -964,20 +1016,21 @@ You have to estimate \nlatf, by Monte Carlo under null, PCA, or SWAG method.
 %UNFOLD
 
 \input{mac_overfit}
-
-
-\begin{frame}{Further Directions}%FOLDUP
-\begin{itemize}
-\item Version 0.01 of \texttt{ratarb} package.
-\item Markowitz portfolio \sportw[*] does not achieve \psnr[*]; model the gap.
-\item Validate the overfit approximations 'under the alternative'.
-\item Problems under constrained portfolios; \Tstat[+] is \emph{not} a 'similar' statistic;
-distribution depends on nuisance parameter \pvsig. \cite{Silvapulle1996137,Sen1999264,nla.cat-vn3800977}
-\end{itemize}
-\end{frame}
 %UNFOLD
 
-%UNFOLD
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section{Odds \& Ends}
+
+%\begin{frame}{Further Directions}%FOLDUP
+%\begin{itemize}
+%\item Version 0.01 of \texttt{ratarb} package.
+%\item Markowitz portfolio \sportw[*] does not achieve \psnr[*]; model the gap.
+%\item Validate the overfit approximations 'under the alternative'.
+%\item Problems under constrained portfolios; \Tstat[+] is \emph{not} a 'similar' statistic;
+%distribution depends on nuisance parameter \pvsig. \cite{Silvapulle1996137,Sen1999264,nla.cat-vn3800977}
+%\end{itemize}
+%\end{frame}
+%%UNFOLD
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Appendix}%FOLDUP
@@ -1020,22 +1073,26 @@ close(FID)
 \begin{frame}{Wait, I Want Returns}%FOLDUP
 
 <<'ddown_connection'>>=
+
 source("drawdown.R")
 epy <- 253
 
-x.psis <- seq(0,2.5/sqrt(epy),length.out=32)
-dprob <- 0.975
-
+n.x <- ifelse(FINAL.VERSION,24,16)
 gen.per <- ifelse(FINAL.VERSION,2^18,2^15)
+
+x.psis <- seq(0,2.5/sqrt(epy),length.out=n.x)
+dprob <- 0.975
 
 y.dds <- sapply(x.psis,function(sr) { 
 	zzz <- rdd(gen.per,epy,sr,tgen)
 	retval <- quantile(zzz,probs=dprob,type=7)[[1]]
 })
 
+#noop
+invisible(NULL)
 @
 
-<<'ddown_plot',include=FALSE,fig=TRUE>>=
+<<'ddown_plot',include=FALSE,fig=TRUE,cache=FALSE>>=
 
 # in percent
 ddown.max <- 33
@@ -1049,7 +1106,7 @@ abline(lm(y.mxv.pretty ~ x.psi.pa))
 
 @
 Idea: lever up until volatility ``too high.'' Set this by a drawdown cap. Sharpe Ratio limits drawdowns.
-\vspace{-0.35in}
+\vspace{-0.05in}
 \begin{figure}[htbp]
   \begin{center}
 		\includegraphics[width=2.0in]{figure/ddown_plot}

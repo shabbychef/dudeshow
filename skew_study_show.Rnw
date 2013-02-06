@@ -75,20 +75,24 @@ res[,3] = signif(res[,3],digits=2)
 res[,4] = signif(res[,4],digits=2)
 res[,5] = signif(res[,5],digits=2)
 
+colnames(res) <- c("distribution","param","skew","ex. kurtosis","type I")
+# noop
+
 #digits=c(0,0,0,2,2,2),
 xres <- xtable(res,label="tab:sharpe_skew_robustness",
 							 display=c('s','s','s','g','g','fg'),
 							 caption=paste("Empirical type I rates of the test for $\\psnr = 1.0$ via distribution of the Sharpe ratio are given for various distributions of returns.  The empirical rates are based on ", 
 														 ntrials, 
 														 " simulations of three years of daily returns, with a nominal rate of $\\typeI = 0.05$. Skew appears to have a much more adverse effect than kurtosis alone."))
+
+invisible(NULL)
 @
 
-<<'skewtable',print=TRUE,results="asis">>=
+<<'skewtable',print=TRUE,results="asis",cache=FALSE>>=
 
 print(xres,include.rownames=FALSE)
 
 @
-
 
 %for vim modeline: (do not edit)
 % vim:ts=2:sw=2:tw=79:fdm=marker:fmr=FOLDUP,UNFOLD:cms=%%s:syn=rnoweb:ft=rnoweb:ai:si:cin:nu:fo=croql:cino=p0t0c5(0:

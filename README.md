@@ -21,3 +21,15 @@ Assistant Professor at University of California, San Diego.
 
 All opinions expressed in this talk are those of the author, and not his
 employer.
+
+### Build
+
+One should be able to build the slideshow using knitr:
+
+```bash
+make dude.pdf
+```
+
+You will need the LambertW, MASS, quantmod, knitr, formatR, fPortfolio, TTR,
+and xtable packages.
+

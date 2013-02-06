@@ -3,6 +3,12 @@
 #
 # base R definitions for dude paper
 
+# compiler flags!
+
+FINAL.VERSION <- TRUE
+#FINAL.VERSION <- FALSE
+
+
 safe.install <- function(pkg.name,do.load=FALSE) {
 	if (! length(which(.packages(all.available=TRUE) %in% pkg.name))) {
 		install.packages(pkg.name,repos="http://cran.cnr.berkeley.edu/")
@@ -38,7 +44,7 @@ dpy <- 253
 # monte carlo studies; the default value shall be 1000 for
 # the 'normal' high-resolution compile of this document.
 # a value less than 100 shall be ignored;
-mc.resolution <- 200
+mc.resolution <- ifelse(FINAL.VERSION,1000,200)
 
 #make this like cci matlab?
 rel.returns <- function(x,k=1) {

@@ -25,7 +25,8 @@ TIME        := $(shell perl -e 'print time();')
 PAGER   		:= $(shell which less)
 TAR         := $(shell which tar)
 ASPELL  		:= $(shell which aspell)
-MAXIMA      := $(shell which maxima)
+#DVIVIEWER   := $(shell which xdvi)
+DVIVIEWER   := $(shell which evince)
 
 RLIB         = /usr/lib64/R
 
@@ -120,6 +121,8 @@ DVIPDF_FLAGS = -R -t letter -Pcmz -Pamz
 # xdvi
 XDVI_FLAGS   = -safer $(XDVI_SCALE) -expert -hush $(X_GEOM_PORT) -paper us \
 								-keep -postscript 0
+# evince
+EVINCE_DVI_FLAGS =
 
 # pdfviewer
 XPDF_FLAGS   = $(X_GEOM_PORT) -z width -bg grey
@@ -175,9 +178,6 @@ default : all
 		if grep Rerun $*.log > /dev/null; then $(PRETEX) $(LATEX) $*; fi
 		if grep Citation $*.log > /dev/null; then $(PREBIB) $(BIBTEX) $*; $(PRETEX) $(LATEX) $*; fi
 		if grep Rerun $*.log > /dev/null; then $(PRETEX) $(LATEX) $*; fi
-
-%.txt : %.mx
-		$(MAXIMA) -b $< > $@
 
 %.dep.dot : %.tex %.dvi $(STY_FILES)
 		echo digraph G \{ > $@;
@@ -261,8 +261,9 @@ default : all
 		dot $(DOT_FLAGS) -Tfig $< -o $@
 
 # viewing targets
+#$(DVIVIEWER) $(XDVI_FLAGS) $*.dvi
 %.xsee : %.dvi
-		xdvi $(XDVI_FLAGS) $*.dvi
+		$(DVIVIEWER) $(EVINCE_DVI_FLAGS) $*.dvi
 		
 %.pdfsee : %.pdf
 		$(PDF_VIEWER) $(PDFSEE_FLAGS) $*.pdf
