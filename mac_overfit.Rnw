@@ -13,7 +13,7 @@ FINAL.VERSION <- TRUE
 @
 
 % MAC fit stuff%FOLDUP
-<<'macfit'>>=
+<<'macfit_defs'>>=
 library(TTR)
 
 ary.tstat <- function(rets,co.dim) {
@@ -79,6 +79,9 @@ T2.qqplot <- function(T2,n,p,...) {
 }
 #UNFOLD
 
+@
+
+<<'macfit_mc'>>=
 set.seed(152345)
 
 nday <- ifelse(FINAL.VERSION,2500,512)
@@ -134,6 +137,9 @@ maxp.dits <- check.p[which.min(dits)]
 apx.p <- maxp.ks.p
 #UNFOLD
 
+@
+
+<<'macfit_SPY'>>=
 # test it on SPY
 SPY.test <- GSPC[,"GSPC.Adjusted"]
 SPY.rets <- rel.returns(SPY.test)

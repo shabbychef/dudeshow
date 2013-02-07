@@ -783,7 +783,7 @@ record keeping, cannot deal with sequential overfit.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Markowitz \& Hotelling}%FOLDUP
 
-\begin{frame}{The Portfolio Problem}%FOLDUP
+\begin{frame}[allowframebreaks]{The Portfolio Problem}%FOLDUP
 \begin{itemize}
 \item Suppose you can invest in \nlatf different assets. (Stocks, ETPs, strategies, \etc)
 How do you choose a portfolio?
@@ -795,32 +795,65 @@ Let \pvmu, \pvsig be the (vector) mean and (matrix) covariance.
 This has mean $\tr{\sportw}\pvmu$ and variance \qform{\pvsig}{\sportw}.
 The SNR is 
 $$\frac{\tr{\sportw}\pvmu}{\sqrt{\qform{\pvsig}{\sportw}}}$$
+In brief, pick a portfolio to maximize SNR.
+
+\break
+
+\item The population parameters are unknown. Given \ssiz observations of returns,
+compute `usual' estimates \svmu, \svsig.
+\item Markowitz Portfolio maximizes the SR: \cite{markowitz1952portfolio,markowitz1999early,markowitz2012foundations}
+$$
+\sportw[*]\defeq \argmax_{\sportw} \frac{\tr{\sportw}\svmu}{\sqrt{\qform{\svsig}{\sportw}}}.
+$$
+May also incorporate \rfr, but must bound risk: 
+$$
+\sportw[*]\defeq \argmax_{\sportw \,:\, \qform{\svsig}{\sportw} \le s^2}\, \frac{\tr{\sportw}\svmu - \rfr}{\sqrt{\qform{\svsig}{\sportw}}}.
+$$
+\item The optimal portfolio is
+$\sportw[*]\propto\minv{\svsig}\svmu$.
+% or \sqrt{\frac{s}{\qform{\minv{\svsig}}\svmu}} \minv{\svsig}\svmu
+\item The SR of this portfolio is
+$$
+\ssr[*] = \sqrt{\qform{\minv{\svsig}}{\svmu}} - \frac{\rfr}{s}.
+$$
+%The RV $\wrapParens{\ssr[*] + \frac{\rfr}{s}}^2 = \qform{\minv{\svsig}}{\svmu}$ is familiar...
+Drop the \rfr for now, and consider the RV
+$\ssrsq[*] = \qform{\minv{\svsig}}{\svmu}$.
+
 \end{itemize}
 
 \end{frame}%UNFOLD
 
-\begin{frame}{Markowitz \& Hotellin}%FOLDUP
+\begin{frame}{Markowitz \& Hotelling}%FOLDUP
 
 \begin{itemize}
-\item Consider \ssiz observations of \nlatf-vector of asset returns.
-\item Hotelling \Tstat is multivariate generalization of \tstat:
-\begin{equation}
-\nonumber
-\begin{split}
-\Tstat &\defeq \ssiz {\tr{\svmu}\svsig^{-1}\svmu},\\
- &= \ssiz \max_{\sportw} \wrapNeParens{\frac{\tr{\sportw}\svmu}{\sqrt{\tr{\sportw}\svsig \sportw}}}^2 
-%= \ssiz \max_{\sportw} \funcit{\ssrsq}{\sportw} 
-= \ssiz \ssrsq[*],
-\end{split}
-\end{equation}
-where \ssr[*] is SR of Markowitz portfolio $\sportw[*]\propto\minv{\svsig}\svmu$.\cite{Hotelling:1931,Sen20073741}  % Roy's UIT
-\item Via Hotelling \Tstat, maximal Sharpe squared has \flaw{}-distribution:
+%where \ssr[*] is SR of Markowitz portfolio $\sportw[*]\propto\minv{\svsig}\svmu$.\cite{Hotelling:1931,Sen20073741}  % Roy's UIT
+%\item Consider \ssiz observations of \nlatf-vector of asset returns.
+%\item Hotelling \Tstat is multivariate generalization of \tstat:
+%\begin{equation}
+%\nonumber
+%\begin{split}
+%\Tstat &\defeq \ssiz {\tr{\svmu}\svsig^{-1}\svmu},\\
+ %&= \ssiz \max_{\sportw} \wrapNeParens{\frac{\tr{\sportw}\svmu}{\sqrt{\tr{\sportw}\svsig \sportw}}}^2 
+%%= \ssiz \max_{\sportw} \funcit{\ssrsq}{\sportw} 
+%= \ssiz \ssrsq[*],
+%\end{split}
+%\end{equation}
+%where \ssr[*] is SR of Markowitz portfolio $\sportw[*]\propto\minv{\svsig}\svmu$.\cite{Hotelling:1931,Sen20073741}  % Roy's UIT
+\item Hotelling \Tstat is multivariate generalization of \tstat: \cite{Hotelling:1931,Sen20073741,timm2002applied}
+$$
+\Tstat \defeq \ssiz {\tr{\svmu}\svsig^{-1}\svmu} = \ssiz\ssrsq[*]
+$$
+(Recall that in the univariate case $\tstat = \sqrt{\ssiz}\ssr$.)
+\item For normal returns, rescaled \Tstat has \flaw{}-distribution:
 $$
 \frac{(\ssiz - \nlatf)}{\nlatf (\ssiz - 1)} \ssiz \ssrsq[*] \sim \flaw{\ssiz\psnrsq[*],\nlatf,\ssiz - \nlatf},
 $$
-where \psnr[*] is SNR of \emph{population} optimal portfolio, $\pportw[*]\propto\minv{\pvsig}\pvmu$.\\
-So \ssr[*] can be used to perform inference on \psnr[*]!
-\item \emph{n.b.} \psnr[*] is maximal SNR of \emph{any} portfolio, including \sportw[*].
+where \psnr[*] is SNR of \emph{population} optimal portfolio, $\pportw[*]=\minv{\pvsig}\pvmu$.\\
+So \ssr[*] can be used to perform inference on \psnr[*].
+\item \emph{n.b.} \psnr[*] is maximal SNR of \emph{any} portfolio, including \sportw[*].\\
+We expect some loss: $SNR\wrapParens{\sportw[*]} \le SNR\wrapParens{\pportw[*]}$. The loss depends
+on sample size, effect size; not well understood.
 \end{itemize}
 \end{frame}
 \nocite{Sen20073741}  % Roy's UIT
@@ -829,7 +862,9 @@ So \ssr[*] can be used to perform inference on \psnr[*]!
 
 \begin{frame}{Inference on \psnr[*]}%FOLDUP
 \begin{itemize}
-\item Quant 101: ``don't look at \ssr[*] when computing \sportw[*].''
+\item Observe \ssr[*], perform inference on \psr[*], an upper bound
+on SNR of \sportw[*].
+%\item Quant 101: ``don't look at \ssr[*] when computing \sportw[*].''
 %(\ie worse than uninformative, actually harmful.)
 \item Via \flaw{}-distribution we have
 %\begin{equation}
@@ -845,14 +880,19 @@ So \ssr[*] can be used to perform inference on \psnr[*]!
 \E{\ssrsq[*]} = \frac{\psnrsq[*] + \arat}{1 - \arat},\qquad\mbox{where}\,\,\arat \defeq \nlatf / \ssiz.
 \label{eqn:srstarstats}
 \end{equation}
-%Gives unbiased estimator: $\E{(1-\arat)\ssrsq[*] - \arat} = \psnrsq[*]$.
-\item CI, MLE on \psnr[*] via \flaw{}-CDF \& PDF (\texttt{pf} and \texttt{df}).
+Gives unbiased estimator: $\E{(1-\arat)\ssrsq[*] - \arat} = \psnrsq[*]$.\\
+(Oops! unbiased estimator of \psnrsq[*] can be negative!)
+%\item CI, MLE on \psnr[*] via \flaw{}-CDF \& PDF.
+%(\texttt{pf} and \texttt{df}).
+%The `KRS estimator' .\cite{kubokawa1993estimation}
+\item CI, MLE on \psnr[*] via \flaw{}-CDF \& PDF. Shrinkage estimators.\cite{kubokawa1993estimation}
 %\item Via \flaw{}-distribution, if $\ssrsq[*] \le \frac{\arat}{1 - \arat}$ then MLE of $\psnr[*]$ is 0. \cite{MC1986216}
-\item `Aspect ratio' $\arat\defeq\nlatf / \ssiz$ sets the bar for \ssrsq[*].
+\item If $\ssrsq[*] \le \frac{\arat}{1 - \arat}$ then MLE of $\psnr[*]$ is 0. \cite{MC1986216}
+%\item `Aspect ratio' $\arat\defeq\nlatf / \ssiz$ sets the bar for \ssrsq[*].
 \end{itemize}
 \vspace{-0.03in}
 \begin{alertblock}{rule of thumb, based on \flaw{}-MLE}
-``If $\ssrsq[*] < \arat$, don't trade it!''
+``If $\ssrsq[*] < \arat$, don't bother!''
 \end{alertblock}
 \nocite{MC1986216}
 \end{frame}
@@ -961,7 +1001,7 @@ q.names <- x.names[qcols]
 @
 %UNFOLD
 
-\begin{frame}{Hotelling on S\&P Sector Indices}%FOLDUP
+\begin{frame}{Example: Hotelling on S\&P Sector Indices}%FOLDUP
 Index data \texttt{\Sexpr{paste(pq.names,sep=" ",collapse=", ")}} from 
 \texttt{\Sexpr{paste("fPortfolio::",x.name,sep="")}},
 from \Sexpr{x.TEO1} to \Sexpr{x.TEOf}.  ($\ssiz = \Sexpr{n}$ days, $\nlatf = \Sexpr{pq}$ stocks)
@@ -977,8 +1017,8 @@ $\ssrsq[*] = \Sexpr{signif(x.dpy * x.run$opt ^ 2,digits=3)}\yrto{-1}$ and
 $\arat = \Sexpr{signif(x.dpy * arat,digits=3)}\yrto{-1}$.
 \item 95\% CI for $\psnr[*]$ is $\wrapNeBracks{\Sexpr{signif(sqrt(x.dpy) * x.run$ci$lo,digits=2)}\yrto{-1/2},\Sexpr{signif(sqrt(x.dpy) * x.run$ci$hi,digits=2)}\yrto{-1/2}}$
 \end{itemize}
-Conclusion: Markowitz portfolio on S\&P sectors not recommended.\\
-(joke: how many 'F's are there in 'alpha'?)
+Conclusion: Markowitz portfolio on S\&P sectors \emph{not} recommended.\\
+%(joke: how many 'F's are there in 'alpha'?)
 \end{frame}
 %UNFOLD
 
@@ -991,15 +1031,60 @@ Caricature of quant work:
 \item Profit! (or not)
 \end{itemize}
 
+Q: How to estimate the SNR of \stratrc[*]?
+
+\break
+
 Toy Example: Moving Average Crossover:
 \begin{itemize}
 \item \stratrc is vector of 2 window lengths; Long the instrument
 exactly when one moving average exceeds the other.
 \item Brute-force backtest for allowable window lengths.
 \end{itemize}
-Q: How to estimate the SNR of \stratrc[*]?
+
+<<'mac_example_SPY',include=FALSE,fig=TRUE>>=
+
+library(TTR)
+
+# test it on SPY
+SPY.some <- SPX.adjclose 
+SPY.rets <- rel.returns(SPY.some)
+start.TEO <- "1999-01-01"
+next.TEO <- "2000-01-01"
+end.TEO <- "2011-01-01"
+full.TEO <- paste(start.TEO,end.TEO,sep="::")
+part.TEO <- paste(next.TEO,end.TEO,sep="::")
+
+SPY.rets <- SPY.rets[full.TEO,]
+SPY.open <- SPY.some[full.TEO,][[1]] 
+
+win1 <- 40
+win2 <- 140
+SPY.mtm <- SPY.open * exp(cumsum(SPY.rets))
+sm1 <- SMA(SPY.mtm,win1)
+sm2 <- SMA(SPY.mtm,win2)
+sm.all <- merge(sm1,sm2,SPY.mtm)
+sm.all <- sm.all[part.TEO,]
+
+plot.zoo(sm.all,screens=c(1,1,1),col=c('red','blue','black'),
+				 xlab="time",ylab="GSPC",
+				 type=c('l','l','l'),lty=c('solid','solid','solid'))
+				 #type=c('l','l','l'),lty=c('dashed','dashed','solid'))
+@
+
+\vspace{-0.35in}
+\begin{figure}[htbp]
+  \begin{center}
+		\includegraphics[width=2.5in]{figure/mac_example_SPY}
+		\caption{Example of 2-window MAC on GSPC.}
+		\label{fig:mac_example_SPY}
+	\end{center}
+\end{figure}
+
+
 
 \break
+
 Q: How to estimate the SNR of \stratrc[*]?\\
 A(?): Make PCA-like linear approximation of returns vectors:
 %$$\wrapNeBraces{\vreti[1],\ldots,\vreti[m]} \approx \mathcal{L} \subset \setwo{\sum_{1\le j \le \nlatf} k_j \vretj[j]}{k_j \in \reals}$$
@@ -1017,6 +1102,21 @@ You have to estimate \nlatf, by Monte Carlo under null, PCA, or SWAG method.
 
 \input{mac_overfit}
 %UNFOLD
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{End Matter}
+
+\begin{frame}{Conclusions}
+\begin{itemize}
+\item I hope I did not scare you.
+\item Statistics can useful to avoid quant disasters.
+\item It is better to be lucky than good.
+\item We are looking for interns!
+
+\end{itemize}
+
+
+\end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\section{Odds \& Ends}

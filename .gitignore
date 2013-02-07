@@ -35,5 +35,6 @@ figure/*.eps
 figure/*.jpg
 
 # the final result
-dude.pdf
+# allow it now
+#dude.pdf
 
