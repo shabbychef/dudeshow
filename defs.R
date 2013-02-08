@@ -46,9 +46,28 @@ dpy <- 253
 # a value less than 100 shall be ignored;
 mc.resolution <- ifelse(FINAL.VERSION,1000,200)
 
+########################################################################
+# utils:
 #make this like cci matlab?
 rel.returns <- function(x,k=1) {
-	diff(log(x),lag=k)
+	retval <- diff(log(x),lag=k)
+	return(retval)
+}
+rr2lr <- function(x) {
+	retval <- log(1+x)
+	return(retval)
+}
+lr2rr <- function(x) { 
+	retval <- exp(x) - 1
+	return(retval)
+}
+lr2mtm <- function(x) { 
+	retval <- exp(cumsum(x))
+	return(retval)
+}
+rr2mtm <- function(x) { 
+	retval <- lr2mtm(rr2lr(x))
+	return(retval)
 }
 
 ########################################################################

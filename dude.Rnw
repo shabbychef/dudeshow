@@ -29,14 +29,6 @@ LONG.FORM <- FALSE
 source("get_ff_data.R")
 frow <- 1 + max(which(apply(is.na(ff_daily_factors),1,any)))
 subrr <- ff_daily_factors[frow:dim(ff_daily_factors)[1],]
-rr2lr <- function(x) {
-	retval <- log(1+x)
-	return(retval)
-}
-lr2rr <- function(x) { 
-	retval <- exp(x) - 1
-	return(retval)
-}
 subsrs <- apply(rr2lr(subrr[,c("smb","hml","mktrf","umd")]),2,f_asharpe)
 @
 
@@ -223,7 +215,8 @@ Which strategy would you rather invest in? ``Slow and Steady'' or ``Loose Cannon
 %UNFOLD
 
 %\begin{frame}[allowframebreaks]{the Sharpe Ratio}
-\begin{frame}[allowframebreaks]{Basic Performance Analysis}%FOLDUP
+%\begin{frame}[allowframebreaks]{Basic Performance Analysis}
+\begin{frame}{Returns}%FOLDUP
 \begin{itemize}
 \item Let \pryt[t] be the `mark-to-market' (MtM) at time $t$.
 \item Compute the \emph{returns}:
@@ -236,9 +229,69 @@ By simple calculus: $\grett[t] \le \arett[t]$ with equality at zero.
 \item Contemporaneous Arithmetic returns are additive:\\
 Arithmetic return of a portfolio is the dollar-weighted
 average of the components' arithmetic returns. (This includes `shorting'.)
+\end{itemize}
+\end{frame}%UNFOLD
 
-\break
+\begin{frame}{It's a Tough World}%FOLDUP
+\begin{itemize}
+\item The opposite of a losing strategy might be a losing strategy!\\
+Suppose Bob sells when Alice buys, and
+vice versa. Because of compounding, they can both have negative total
+log return. 
+\item This effect is exacerbated by volatility.
+\item Factoring in costs, the 'average' strategy is certainly a loser.
+\end{itemize}
+	
+% Alice/Bob%FOLDUP
 
+<<'alice_bob',include=FALSE,fig=TRUE>>=
+
+# just get the TEOs
+start.TEO <- "2000-01-01"
+end.TEO <- "2010-01-01"
+full.TEO <- paste(start.TEO,end.TEO,sep="::")
+example.ts <- SPX.adjclose[full.TEO]
+
+n.day <- dim(example.ts)[1]
+
+# set up population
+set.seed(171713)
+
+alice.rr <- 0.0160 * rnorm(n.day)
+bob.rr <- - alice.rr
+
+alice.mtm <- rr2mtm(alice.rr)
+bob.mtm <- rr2mtm(bob.rr)
+
+alice.xt <- xts(data.frame("alice"=alice.mtm),order.by=time(example.ts))
+bob.xt <- xts(data.frame("bob"=bob.mtm),order.by=time(example.ts))
+both.xt <- merge(alice.xt,bob.xt)
+
+par(mfrow=c(1,1))
+plot.zoo(both.xt,screens=c(1,1),col=c('red','blue'),
+				 xlab="time",ylab="mtm",
+				 type=c('l','l'),lty=c('solid','solid'))
+
+#locator(1)
+legend(13800,1.3,legend=c('Alice','Bob'),col=c('red','blue'),
+				 lty=c('solid','solid'))
+
+@
+
+\vspace{-0.15in}
+\begin{figure}[htbp]
+  \begin{center}
+		\includegraphics[width=2.0in]{figure/alice_bob}
+		%\caption{Which strategy would you rather invest in? ``Slow and Steady'' or ``Loose Cannon''?}
+		\label{fig:alice_bob}
+	\end{center}
+\end{figure}
+\vspace{-0.20in}
+%UNFOLD
+\end{frame}%UNFOLD
+
+\begin{frame}{the Risk Return Tradeoff}%FOLDUP
+\begin{itemize}
 \item Let $\pmu = \E{\grett[]}, \psigsq = \VAR{\grett[]}$.\\
 Throughout, mostly assume \grett[t] are \iid (unrealistic).
 \item For fixed \pmu, prefer a smaller \psig; for fixed
@@ -246,6 +299,9 @@ Throughout, mostly assume \grett[t] are \iid (unrealistic).
 The \emph{efficient frontier} is the set of optimal strategies
 under this preference:
 \end{itemize}
+
+% risk/return space plot%FOLDUP
+
 %\begin{center}%FOLDUP
 	%\vspace{-0.20in}
 	%%\resizebox{0.35 \linewidth}{!}{%
@@ -342,9 +398,9 @@ plot.all(mu,sg,rfr,epy)
 	\end{center}
 \end{figure}
 \vspace{-0.20in}
-
-\end{frame}
 %UNFOLD
+
+\end{frame}%UNFOLD
 
 %\begin{frame}[allowframebreaks]{the Sharpe Ratio}
 \begin{frame}{the Sharpe Ratio}%FOLDUP
@@ -420,7 +476,7 @@ Diminishing returns in \psr : $2\yrto{-1/2} + 1\yrto{-1/2} \Rightarrow \Sexpr{si
 For two strategies with correlation $\rho$:
 $$\psrUL{2}{*} = \frac{\psrUL{2}{1} + \psrUL{2}{2} - 2\rho\psrUL{}{1}\psrUL{}{2}}{1 - \rho^2}$$
 \item In general, want anti-correlated strategies (`hedges').\\
-Avoid strategies correlated to the `retail alpha'.
+Avoid strategies correlated to `retail alpha'.
 \end{itemize}
 \end{frame}
 %UNFOLD
@@ -518,7 +574,7 @@ hi.conf.c <- median(samps80.1 * rhovals**2)
 @
 
 \begin{frame}[allowframebreaks]{Power and Sample Size}%FOLDUP
-Relation between sample size, effect size (SNR), and rates of 
+A power rule is the relation between sample size, effect size (SNR), and rates of 
 false positives and false negatives.\\
 Figure out if you have enough data or enough 'alpha'.
 \begin{itemize}
@@ -812,7 +868,8 @@ $$
 \item The optimal portfolio is
 $\sportw[*]\propto\minv{\svsig}\svmu$.
 % or \sqrt{\frac{s}{\qform{\minv{\svsig}}\svmu}} \minv{\svsig}\svmu
-\item The SR of this portfolio is
+%\item The SR of this portfolio is
+with SR:
 $$
 \ssr[*] = \sqrt{\qform{\minv{\svsig}}{\svmu}} - \frac{\rfr}{s}.
 $$
@@ -1058,25 +1115,54 @@ part.TEO <- paste(next.TEO,end.TEO,sep="::")
 SPY.rets <- SPY.rets[full.TEO,]
 SPY.open <- SPY.some[full.TEO,][[1]] 
 
-win1 <- 40
-win2 <- 140
-SPY.mtm <- SPY.open * exp(cumsum(SPY.rets))
+win1 <- 50
+win2 <- 170
+SPY.mtm <- SPY.open * lr2mtm(SPY.rets)
 sm1 <- SMA(SPY.mtm,win1)
 sm2 <- SMA(SPY.mtm,win2)
 sm.all <- merge(sm1,sm2,SPY.mtm)
 sm.all <- sm.all[part.TEO,]
+crossover <- sign(sm1 - sm2)
+crossover <- crossover[part.TEO,]
 
-plot.zoo(sm.all,screens=c(1,1,1),col=c('red','blue','black'),
+# old way:
+#par(mfrow=c(2,1),mar=c(2,2,1,1))
+#plot.zoo(sm.all,screens=c(1,1,1),col=c('cyan','blue','black'),
+#				 xlab="time",ylab="GSPC",
+#				 type=c('l','l','l'),lty=c('solid','solid','solid'))
+#				 #type=c('l','l','l'),lty=c('dashed','dashed','solid'))
+#plot.zoo(crossover)
+
+# new way
+colrs <- c("red","blue","black")
+ltys <- c("solid","solid","dotted")
+
+# see http://rgraphics.limnology.wisc.edu/rmargins_layout.php
+par(oma=c(2,2,2,2))
+nf <- layout(matrix(c(1,2),2,1),widths=10,heights=c(7,3),TRUE)
+# layout.show(nf)        
+xls <- c(as.double(time(sm.all)[1]),100 + as.double(time(sm.all)[dim(sm.all)[1]]))
+par(mar=c(2,4,1,1))
+plot.zoo(sm.all,screens=c(1,1,1),col=colrs,
 				 xlab="time",ylab="GSPC",
-				 type=c('l','l','l'),lty=c('solid','solid','solid'))
-				 #type=c('l','l','l'),lty=c('dashed','dashed','solid'))
+				 xlim=xls,
+				 type=c('l','l','l'),lty=ltys)
+#locator(1)
+
+legend(14110,1585,legend=c(sprintf('%d day',win1),sprintf('%d day',win2),'GSPC'),
+			 col=colrs,lty=ltys)
+
+par(mar=c(1,4,1,1))
+plot.zoo(crossover,xlim=xls,xlab="time",ylab=c("buy/sell"))
+# done
+
 @
 
 \vspace{-0.35in}
 \begin{figure}[htbp]
   \begin{center}
 		\includegraphics[width=2.5in]{figure/mac_example_SPY}
-		\caption{Example of 2-window MAC on GSPC.}
+		\caption{Two-window MAC on GSPC, with buy/sell signal at bottom.}
 		\label{fig:mac_example_SPY}
 	\end{center}
 \end{figure}
@@ -1104,19 +1190,17 @@ You have to estimate \nlatf, by Monte Carlo under null, PCA, or SWAG method.
 %UNFOLD
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{End Matter}
+\section{End Matter}%FOLDUP
 
-\begin{frame}{Conclusions}
+\begin{frame}{Conclusions}%FOLDUP
 \begin{itemize}
 \item I hope I did not scare you.
 \item Statistics can useful to avoid quant disasters.
 \item It is better to be lucky than good.
 \item We are looking for interns!
-
 \end{itemize}
-
-
-\end{frame}
+\end{frame}%UNFOLD
+%UNFOLD
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\section{Odds \& Ends}

@@ -85,7 +85,7 @@ T2.qqplot <- function(T2,n,p,...) {
 set.seed(152345)
 
 nday <- ifelse(FINAL.VERSION,2500,512)
-ntrial <- ifelse(FINAL.VERSION,1024,32)
+ntrial <- ifelse(FINAL.VERSION,2048,32)
 # this idiom don't work. R vectorizes ifelse
 #w1 <- ifelse(FINAL.VERSION,c(4,8,12,16,20,24,28,32,36),c(4,12,20,28,36))
 #w2 <- ifelse(FINAL.VERSION,c(40,80,120,160,200,240,280),c(40,120,200,280))
@@ -139,7 +139,8 @@ apx.p <- maxp.ks.p
 
 @
 
-<<'macfit_SPY'>>=
+<<'macfit_SPY',cache=FALSE>>=
+
 # test it on SPY
 SPY.test <- GSPC[,"GSPC.Adjusted"]
 SPY.rets <- rel.returns(SPY.test)

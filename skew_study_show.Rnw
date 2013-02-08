@@ -23,7 +23,7 @@ multi_test <- function(gen,n,trials=1024) {
 dpy <- 253
 nobs <- round(3 * dpy)
 daily.mean <- 1/sqrt(dpy)
-ntrials <- ceiling(1.0235 * mc.resolution)
+ntrials <- 2 * ceiling(1.0235 * mc.resolution)
 
 set.seed(1)
 
@@ -78,17 +78,16 @@ res[,5] = signif(res[,5],digits=2)
 colnames(res) <- c("distribution","param","skew","ex. kurtosis","type I")
 # noop
 
+@
+
+<<'skewtable',print=TRUE,results="asis",cache=FALSE>>=
+
 #digits=c(0,0,0,2,2,2),
 xres <- xtable(res,label="tab:sharpe_skew_robustness",
 							 display=c('s','s','s','g','g','fg'),
 							 caption=paste("Empirical type I rates of the test for $\\psnr = 1.0$ via distribution of the Sharpe ratio are given for various distributions of returns.  The empirical rates are based on ", 
 														 ntrials, 
 														 " simulations of three years of daily returns, with a nominal rate of $\\typeI = 0.05$. Skew appears to have a much more adverse effect than kurtosis alone."))
-
-invisible(NULL)
-@
-
-<<'skewtable',print=TRUE,results="asis",cache=FALSE>>=
 
 print(xres,include.rownames=FALSE)
 
