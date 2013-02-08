@@ -159,7 +159,7 @@ SPY.TEOf <- time(SPY.rets[length(SPY.rets)])
 @
 %UNFOLD
 
-\begin{frame}{Overfit of Simple 2-Window MAC}%FOLDUP
+\begin{frame}[allowframebreaks]{Overfit of Simple 2-Window MAC}%FOLDUP
 <<'macfitz',include=FALSE,fig=TRUE,dev=c("cairo_ps","pdf")>>=
 set.seed(2178)
 T2.qqplot(max.hot,n=nday,p=apx.p,ncp=0,nsamp=2048)
@@ -175,10 +175,17 @@ T2.qqplot(max.hot,n=nday,p=apx.p,ncp=0,nsamp=2048)
 	\end{center}
 \end{figure}
 \vspace{-0.25in}
-Use on \texttt{GSPC} adjusted returns (\Sexpr{SPY.TEO1} to \Sexpr{SPY.TEOf}, \Sexpr{SPY.n} days), 
-MLE of \psr[*] is
-$\Sexpr{signif(sqrt(dpy) * SPY.mle,digits=2)}\yrto{-1/2}$; 95\% CI is
+
+\break
+\begin{itemize}
+
+\item Use on \texttt{GSPC} adjusted returns, \Sexpr{SPY.TEO1} to \Sexpr{SPY.TEOf}, \Sexpr{SPY.n} days.
+\item Maximal SR is $\Sexpr{signif(sqrt(dpy) * SPY.sr,digits=2)}\yrto{-1/2}$.
+\item Using $\nlatf=\Sexpr{apx.p}$,  we approximate MLE of \psr[*] is
+$\Sexpr{signif(sqrt(dpy) * SPY.mle,digits=2)}\yrto{-1/2}$;\\
+95\% CI is
 $\wrapNeParens{\Sexpr{signif(sqrt(dpy) * SPY.ci$lo,digits=2)}\yrto{-1/2},\Sexpr{signif(sqrt(dpy) * SPY.ci$hi,digits=2)}\yrto{-1/2}}$.
+\end{itemize}
 \end{frame}
 %UNFOLD
 

@@ -112,6 +112,11 @@
 \providecommand{\prvsymf}{f}
 \providecommand{\prvsymv}{v}
 \providecommand{\prvsymu}{u}
+% prices:
+\providecommand{\prvsymp}{p}
+% arithmetic and geometric:
+\providecommand{\prvsyma}{r}
+\providecommand{\prvsymg}{l}
 
 \providecommand{\prvsymPortfolio}{w}
 \providecommand{\prvsymPASSTHROUGH}{W}
@@ -123,9 +128,10 @@
 %UNFOLD
 
 % prices/mtm
-\providecommand{\pryt}[1][t]{\mathSUB{p}{#1}}
-\providecommand{\grett}[1][t]{\mathSUB{l}{#1}}
-\providecommand{\arett}[1][t]{\mathSUB{r}{#1}}
+%\providecommand{\pryt}[1][t]{\mathSUB{p}{#1}}
+\providecommand{\pryp}[1][]{\mathSUB{\prvsymp}{#1}}
+%\providecommand{\grett}[1][t]{\mathSUB{l}{#1}}
+%\providecommand{\arett}[1][t]{\mathSUB{r}{#1}}
 
 \renewcommand{\exp}[1]{\ensuremath{e^{#1}}}
 \providecommand{\longexp}[1]{\ensuremath{\operatorname{exp}\wrapNeParens{#1}}}
@@ -137,6 +143,8 @@
 \providecommand{\retl}[1][]{\mathSUB{\prvsyml}{#1}}
 \providecommand{\retf}[1][]{\mathSUB{\prvsymf}{#1}}
 \providecommand{\retv}[1][]{\mathSUB{\prvsymv}{#1}}
+\providecommand{\reta}[1][]{\mathSUB{\prvsyma}{#1}}
+\providecommand{\retg}[1][]{\mathSUB{\prvsymg}{#1}}
 
 %vector returns:
 \providecommand{\vreti}[1][]{\vectUL{\prvsymi}{}{#1}}
@@ -145,6 +153,8 @@
 \providecommand{\vretl}[1][]{\vectUL{\prvsyml}{}{#1}}
 \providecommand{\vretf}[1][]{\vectUL{\prvsymf}{}{#1}}
 \providecommand{\vretv}[1][]{\vectUL{\prvsymv}{}{#1}}
+\providecommand{\vreta}[1][]{\vectUL{\prvsyma}{}{#1}}
+\providecommand{\vretg}[1][]{\vectUL{\prvsymg}{}{#1}}
 
 % transpose of same
 \providecommand{\trvreti}[1][]{\vectUL{\prvsymi}{\top}{#1}}
@@ -153,6 +163,8 @@
 \providecommand{\trvretl}[1][]{\vectUL{\prvsyml}{\top}{#1}}
 \providecommand{\trvretf}[1][]{\vectUL{\prvsymf}{\top}{#1}}
 \providecommand{\trvretv}[1][]{\vectUL{\prvsymv}{\top}{#1}}
+\providecommand{\trvreta}[1][]{\vectUL{\prvsyma}{\top}{#1}}
+\providecommand{\trvretg}[1][]{\vectUL{\prvsymg}{\top}{#1}}
 
 %matrix returns:
 \providecommand{\mreti}[1][]{\MtxUL{\MakeUppercase{\prvsymi}}{}{#1}}
@@ -161,6 +173,8 @@
 \providecommand{\mretl}[1][]{\MtxUL{\MakeUppercase{\prvsyml}}{}{#1}}
 \providecommand{\mretf}[1][]{\MtxUL{\MakeUppercase{\prvsymf}}{}{#1}}
 \providecommand{\mretv}[1][]{\MtxUL{\MakeUppercase{\prvsymv}}{}{#1}}
+\providecommand{\mreta}[1][]{\MtxUL{\MakeUppercase{\prvsyma}}{}{#1}}
+\providecommand{\mretg}[1][]{\MtxUL{\MakeUppercase{\prvsymg}}{}{#1}}
 
 % the factor or signal
 \providecommand{\sfact}[1][t]{\mathSUB{\prvsymf}{#1}}

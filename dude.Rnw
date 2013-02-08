@@ -218,11 +218,11 @@ Which strategy would you rather invest in? ``Slow and Steady'' or ``Loose Cannon
 %\begin{frame}[allowframebreaks]{Basic Performance Analysis}
 \begin{frame}[allowframebreaks]{Returns}%FOLDUP
 \begin{itemize}
-\item Let \pryt[t] be the `mark-to-market' (MtM) at time $t$.
+\item Let \pryp[t] be the `mark-to-market' (MtM) at time $t$.
 \item Compute the \emph{returns}:
 \begin{align*}
-\mbox{Geometric:}\,\,\grett[t] &\defeq \log\frac{\pryt}{\pryt[t-1]},\\
-\mbox{Arithmetic:}\,\,\arett[t] &\defeq \frac{\pryt}{\pryt[t-1]} - 1 = \exp{\grett[t]} - 1.
+\mbox{Geometric:}\,\,\retg[t] &\defeq \log\frac{\pryp[t]}{\pryp[t-1]},\\
+\mbox{Arithmetic:}\,\,\reta[t] &\defeq \frac{\pryp[t]}{\pryp[t-1]} - 1 = \exp{\retg[t]} - 1.
 \end{align*}
 \item Sequential Geometric returns are additive by telescoping.
 \item Contemporaneous Arithmetic returns are additive:\\
@@ -231,7 +231,7 @@ average of the components' arithmetic returns. (This includes `shorting'.)
 
 \break
 
-\item By simple calculus: $\grett[t] \le \arett[t]$ with equality at zero.
+\item By simple calculus: $\retg[t] \le \reta[t]$ with equality at zero.
 \end{itemize}
 
 % geometric/arithmetic%FOLDUP
@@ -328,8 +328,8 @@ legend(13800,1.3,legend=c('Alice','Bob'),col=c('red','blue'),
 
 \begin{frame}{the Risk Return Tradeoff}%FOLDUP
 \begin{itemize}
-\item Let $\pmu = \E{\grett[]}, \psigsq = \VAR{\grett[]}$.\\
-Throughout, mostly assume \grett[t] are \iid (unrealistic).
+\item Let $\pmu = \E{\retg[]}, \psigsq = \VAR{\retg[]}$.\\
+Throughout, mostly assume \retg[t] are \iid (unrealistic).
 \item For fixed \pmu, prefer a smaller \psig; for fixed
 \psig prefer larger \pmu.\\
 The \emph{efficient frontier} is the set of optimal strategies
@@ -597,7 +597,7 @@ $\abs{\psr - \ssr} \le \frac{2}{\sqrt{\ssiz}}$, with probability $\approx 0.95$.
 \item No easy fix for omitted variable bias \ie ``something changed in the world.''
 \item Perhaps better to generalize to regression:
 $$
-\grett[t] = \alpha + \sum_i \pregco[i] \sfact[i,t] + \pserrt[t],
+\retg[t] = \alpha + \sum_i \pregco[i] \sfact[i,t] + \pserrt[t],
 $$
 with \sfact[i] returns from known benchmark strategies.
 \item Typically want no exposure to \sfact[i] because it is
@@ -720,7 +720,7 @@ This rule is sobering:
 Many explanations are offered:
 \begin{itemize}
 \item Bad backtests: inability to model costs and impact, observer effects, ``backtest arbitrage,''
-outright ``time-travelling.''
+outright ``time-travelling,'' survivorship \& backfill biases.
 \item Biased statistical tests. Rejecting the null for uninteresting reasons.
 \item Claims of ``non-stationarity'' (``the dog ate my alpha.'')
 \end{itemize}
@@ -871,13 +871,15 @@ Why do quants overfit? A toxic mix:
 \item By power rules, you need \emph{years} of data to confirm alpha.
 \item There is only one history to work with:\\ 
 One collects data at a rate of 1 day per day.
-%\item Cross-validation is a fiction: there is ``in-sample'' and ``trading with real money.''
-%\item Human nature to confuse noise for signal.
+\item Recycling ideas developed (and overfit) by others.
 \item Often `refining' ideas while debugging code.
+%\item Cross-validation is a fiction: there is ``in-sample'' and ``trading with real money.''
+\item Cross-validation won't help: there is only ``in-sample'' and ``trading with real money.''
+%\item Human nature to confuse noise for signal.
 \item Sloppy process: often not aware one is overfitting. 
 \item Data snooping tests require good
 record keeping, cannot deal with sequential overfit. 
-\cite{White:2000,Hansen:2005,SSPA:2008}
+\cite{White:2000,Hansen:2005,Hsu2010471}
 \end{itemize}
 \end{frame}%UNFOLD
 %UNFOLD
@@ -891,9 +893,9 @@ record keeping, cannot deal with sequential overfit.
 How do you choose a portfolio?
 \item This generalizes the discrete question, ``is this asset good or not?'' to
 the continuous ``how much shall I invest in it?''
-\item Consider the arithmetic returns \nlatf-vector, \vreti[t]. 
+\item Consider the arithmetic returns \nlatf-vector, \vreta[t]. 
 Let \pvmu, \pvsig be the (vector) mean and (matrix) covariance.
-\item If \sportw is proportion of capital in each asset, return is $\tr{\sportw}\vreti[t]$.\\
+\item If \sportw is proportion of capital in each asset, return is $\tr{\sportw}\vreta[t]$.\\
 This has mean $\tr{\sportw}\pvmu$ and variance \qform{\pvsig}{\sportw}.
 The SNR is 
 $$\frac{\tr{\sportw}\pvmu}{\sqrt{\qform{\pvsig}{\sportw}}}$$
@@ -1223,16 +1225,18 @@ Q: How to estimate the SNR of \stratrc[*]?\\
 A(?): Make PCA-like linear approximation of returns vectors:
 %$$\wrapNeBraces{\vreti[1],\ldots,\vreti[m]} \approx \mathcal{L} \subset \setwo{\sum_{1\le j \le \nlatf} k_j \vretj[j]}{k_j \in \reals}$$
 $$\wrapNeBraces{\vreti[1],\ldots,\vreti[m]} \approx \mathcal{K} \subset \mathcal{L} \defeq \setwo{\mretj \sportw}{\sportw \in \reals{\nlatf}}$$
-Use $\funcit{\psnr}{\stratrc[*]} \approx \max_{\mathcal{L}} \psnr = \psnr[*]$,
+Use $\funcit{\psnr}{\stratrc[*]} \lessapprox \max_{\mathcal{L}} \psnr = \psnr[*]$,
 then make inference on \psnr[*].
 
 Observe maximal strategy SR
 $$\ssr[*] = \funcit{\ssr}{\stratrc[*]} \defeq \max_{1\le i \le m} \funcit{\ssr}{\stratrc[i]},$$
-use it to approximate maximal SR over $\mathcal{L}$.
+use it to approximate maximal SR over $\mathcal{L}$.\\
+%That is, 
+%Perform in
 
 You have to estimate \nlatf, by Monte Carlo under null, PCA, or SWAG method.
 
-Gives an upper bound on \SNRfunc{\stratrc[*]}.
+%Gives an upper bound on \SNRfunc{\stratrc[*]}.
 \end{frame}
 %UNFOLD
 
@@ -1245,8 +1249,10 @@ Gives an upper bound on \SNRfunc{\stratrc[*]}.
 \begin{frame}{Conclusions}%FOLDUP
 \begin{itemize}
 \item I hope I did not scare you.
-\item Statistics can useful to avoid quant disasters.
-\item It is better to be lucky than good.
+\item Using statistics might prevent a quant disaster, but not 
+a source of alpha \emph{per se}.
+\item Process matters.
+\item \emph{It is better to be lucky than good.}
 \item We are looking for interns!
 \end{itemize}
 \end{frame}%UNFOLD
@@ -1265,6 +1271,9 @@ Gives an upper bound on \SNRfunc{\stratrc[*]}.
 %\end{itemize}
 %\end{frame}
 %%UNFOLD
+
+% all around good resources:
+\nocite{abelson2012statistics,mallaby2010more}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Appendix}%FOLDUP
@@ -1335,8 +1344,20 @@ y.mxv <- - log(1 - (ddown.max/100)) / y.dds
 y.mxv.pa <- sqrt(epy) * y.mxv
 y.mxv.pretty <- 100 * lr2rr(y.mxv.pa)
 
-plot(x.psi.pa,y.mxv.pretty,xlab="S.R. (yr^{-1/2})",ylab="max volatility (% yr^{-1/2})",type='p',col='blue')
-abline(lm(y.mxv.pretty ~ x.psi.pa))
+plot(x.psi.pa,y.mxv.pretty,
+		 xlab="S.R. (yr^{-1/2})",ylab="max volatility (% yr^{-1/2})",
+		 type='b',col='blue')
+#abline(lm(y.mxv.pretty ~ x.psi.pa))
+
+x0 <- 1.3
+y0 <- 28
+x1 <- 1.9
+y1 <- 22
+arrows(x0,y0,x1,y1,lwd=2,col='blue',length=0.075)
+
+text(x0 + 0.35 * (x1-x0),
+		 y0 + 0.9 * (y1-y0),
+		 "preference",col='blue')
 
 @
 Idea: lever up until volatility ``too high.'' Set this by a drawdown cap. Sharpe Ratio limits drawdowns.

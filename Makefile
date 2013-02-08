@@ -320,6 +320,7 @@ pdfs: $(patsubst %,%.pdf,$(PROJECTS))
 # targets
 $(DVI_TARGET): $(TEX_SOURCE) $(TEX_EXTRAS) $(STY_FILES)
 #$(PDF_TARGET): $(PS_TARGET)
+$(PDF_TARGET): $(TEX_SOURCE) $(TEX_EXTRAS)
 
 hints :
 	@-grep slides Makefile

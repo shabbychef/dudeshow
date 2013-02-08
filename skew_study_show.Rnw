@@ -1,12 +1,11 @@
 
-<<'preamble',echo=FALSE,print=FALSE,warning=FALSE,message=FALSE>>=
+<<'preamble',echo=FALSE,print=FALSE,warning=FALSE,message=FALSE,cache=FALSE>>=
 source("knitr_opts.R")
 source("defs.R")
+require(xtable)
 @
 
 <<'skewstudy'>>=
-
-require(xtable)
 
 #see if the nominal 0.05 type I rate is maintained for skewed, kurtotic distributions
 #check for SNR=1, annualized
@@ -81,6 +80,8 @@ colnames(res) <- c("distribution","param","skew","ex. kurtosis","type I")
 @
 
 <<'skewtable',print=TRUE,results="asis",cache=FALSE>>=
+
+require(xtable)
 
 #digits=c(0,0,0,2,2,2),
 xres <- xtable(res,label="tab:sharpe_skew_robustness",
