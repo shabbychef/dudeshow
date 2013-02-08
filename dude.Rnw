@@ -216,7 +216,7 @@ Which strategy would you rather invest in? ``Slow and Steady'' or ``Loose Cannon
 
 %\begin{frame}[allowframebreaks]{the Sharpe Ratio}
 %\begin{frame}[allowframebreaks]{Basic Performance Analysis}
-\begin{frame}{Returns}%FOLDUP
+\begin{frame}[allowframebreaks]{Returns}%FOLDUP
 \begin{itemize}
 \item Let \pryt[t] be the `mark-to-market' (MtM) at time $t$.
 \item Compute the \emph{returns}:
@@ -224,12 +224,48 @@ Which strategy would you rather invest in? ``Slow and Steady'' or ``Loose Cannon
 \mbox{Geometric:}\,\,\grett[t] &\defeq \log\frac{\pryt}{\pryt[t-1]},\\
 \mbox{Arithmetic:}\,\,\arett[t] &\defeq \frac{\pryt}{\pryt[t-1]} - 1 = \exp{\grett[t]} - 1.
 \end{align*}
-By simple calculus: $\grett[t] \le \arett[t]$ with equality at zero.
 \item Sequential Geometric returns are additive by telescoping.
 \item Contemporaneous Arithmetic returns are additive:\\
 Arithmetic return of a portfolio is the dollar-weighted
 average of the components' arithmetic returns. (This includes `shorting'.)
+
+\break
+
+\item By simple calculus: $\grett[t] \le \arett[t]$ with equality at zero.
 \end{itemize}
+
+% geometric/arithmetic%FOLDUP
+
+<<'map_returns',include=FALSE,fig=TRUE>>=
+
+# just get the TEOs
+rvals <- seq(from=-0.50,to=0.50,by=0.01)
+lvals <- rr2lr(rvals)
+
+xat <- seq(from=-0.40,to=0.40,by=0.20)
+tlab <- sapply(xat,function(dd) { sprintf('%g %%',100 * dd) })
+
+plot(rvals,lvals,type='l',col='blue',
+		 xaxt="n",
+		 xlab='arithmetic return',ylab='geometric return')
+abline(0,1,col='red',lty='dashed')
+abline(h=0,col='gray',lty='dashed')
+abline(v=0,col='gray',lty='dashed')
+axis(1,at=xat,label=tlab)
+
+@
+
+\vspace{-0.15in}
+\begin{figure}[htbp]
+  \begin{center}
+		\includegraphics[width=2.0in]{figure/map_returns}
+		%\caption{the caption}
+		\label{fig:map_returns}
+	\end{center}
+\end{figure}
+\vspace{-0.20in}
+%UNFOLD
+
 \end{frame}%UNFOLD
 
 \begin{frame}{It's a Tough World}%FOLDUP
@@ -282,7 +318,7 @@ legend(13800,1.3,legend=c('Alice','Bob'),col=c('red','blue'),
 \begin{figure}[htbp]
   \begin{center}
 		\includegraphics[width=2.0in]{figure/alice_bob}
-		%\caption{Which strategy would you rather invest in? ``Slow and Steady'' or ``Loose Cannon''?}
+		%\caption{the caption}
 		\label{fig:alice_bob}
 	\end{center}
 \end{figure}
@@ -433,7 +469,7 @@ The `Student Ratio'?
 (Although using arithmetic returns looks better ...)
 \item The units of Sharpe are `per square root time':\\
 \smu is `(percent) per time', \ssig is `(percent) per root time'.
-\item Sharpe is often quoted in annualized units, \ie \yrto{-1/2}.\\
+\item Sharpe is often given in annualized terms, \ie \yrto{-1/2}.\\
 Avoid ambiguity and \emph{always} include units.
 \item \nb $1\yrto{-1/2} = \frac{1}{2}\qto{-1/2} = \frac{1}{\sqrt{12}}\moto{-1/2} = \frac{1}{\sqrt{253}}\dayto{-1/2}$
 \item For equities quant strategies, achieved SR translates as:
@@ -467,11 +503,16 @@ enough gambles are made, annual return will be nearly normal.
 
 \begin{frame}{Diversification and Sharpe Ratio}%FOLDUP
 \begin{itemize}
-\item \emph{Squared} SNR of independent strategies is subadditive:
+%\item \emph{Squared} SNR of independent strategies is subadditive:
+%For $k$ \coindie strategies, with SNRs $\psnr[1],\ldots,\psnr[k]$, optimal
+%rebalancing combination has
+\item Under independence, \emph{Squared} SNR is subadditive.
 For $k$ \coindie strategies, with SNRs $\psnr[1],\ldots,\psnr[k]$, optimal
-rebalancing combination has
+rebalancing gives
 $$\psrsq[*] = \sum_i \psrsq[i]$$
 Diminishing returns in \psr : $2\yrto{-1/2} + 1\yrto{-1/2} \Rightarrow \Sexpr{signif(sqrt(2^2 + 1),digits=2)}\yrto{-1/2}$.
+\item 'Fundamental Law': $\mbox{Sharpe} = \mbox{edge} \sqrt{\mbox{gambles}}.$
+\cite{grinold1999active}
 \item For dependent strategies, correlation is relevant.\\
 For two strategies with correlation $\rho$:
 $$\psrUL{2}{*} = \frac{\psrUL{2}{1} + \psrUL{2}{2} - 2\rho\psrUL{}{1}\psrUL{}{2}}{1 - \rho^2}$$
@@ -529,7 +570,10 @@ abline(v=corr.bpoint,col='gray',lty=2)
 
 \begin{frame}[allowframebreaks]{Inference on Sharpe Ratio}%FOLDUP
 \begin{itemize}
-\item SR is actually a \emph{biased} estimator of SNR:\cite{CambridgeJournals:4493808}
+%\item Use \ssr to perform inference on \psr. It is actually a 
+%\emph{biased} estimator: \cite{CambridgeJournals:4493808}
+%\item SR is actually a \emph{biased} estimator of SNR:\cite{CambridgeJournals:4493808}
+\item \ssr is a biased estimator of \psr: \cite{CambridgeJournals:4493808}
 $$
 \E{\ssr} = \sqrt{\frac{\ssiz-1}{2}}\frac{\GAM{(\ssiz-2)/2}}{\GAM{(\ssiz-1)/2}} \psr = \frac{1}{c_4}\psr.
 $$
@@ -541,8 +585,10 @@ s.e. = \sqrt{\frac{1 + \frac{\psrsq}{2}}{\ssiz - 1}}
 \approx \sqrt{\frac{1}{\ssiz}}.
 $$
 The latter annualizes as you would expect.
-\\Rule of thumb: $\abs{\psr - \ssr} \le \frac{2}{\sqrt{\ssiz}}$, with probability $\approx 0.95$.
-
+%\\Rule of thumb: $\abs{\psr - \ssr} \le \frac{2}{\sqrt{\ssiz}}$, with probability $\approx 0.95$.
+\begin{alertblock}{rule of thumb for Sharpe Significance}
+$\abs{\psr - \ssr} \le \frac{2}{\sqrt{\ssiz}}$, with probability $\approx 0.95$.
+\end{alertblock}
 \break
 
 \item Fixes for heteroskedasticity, autocorrelation, skew.
@@ -909,7 +955,7 @@ $$
 where \psnr[*] is SNR of \emph{population} optimal portfolio, $\pportw[*]=\minv{\pvsig}\pvmu$.\\
 So \ssr[*] can be used to perform inference on \psnr[*].
 \item \emph{n.b.} \psnr[*] is maximal SNR of \emph{any} portfolio, including \sportw[*].\\
-We expect some loss: $SNR\wrapParens{\sportw[*]} \le SNR\wrapParens{\pportw[*]}$. The loss depends
+We expect some loss: $\SNRfunc{\sportw[*]} \le \SNRfunc{\pportw[*]}$. The loss depends
 on sample size, effect size; not well understood.
 \end{itemize}
 \end{frame}
@@ -919,8 +965,9 @@ on sample size, effect size; not well understood.
 
 \begin{frame}{Inference on \psnr[*]}%FOLDUP
 \begin{itemize}
-\item Observe \ssr[*], perform inference on \psr[*], an upper bound
-on SNR of \sportw[*].
+%\item Observe \ssr[*], perform inference on \psr[*], an upper bound
+%on SNR of \sportw[*].
+\item Observe \ssr[*], perform inference on $\psr[*] = \SNRfunc{\pportw[*]} \ge \SNRfunc{\sportw[*]}.$
 %\item Quant 101: ``don't look at \ssr[*] when computing \sportw[*].''
 %(\ie worse than uninformative, actually harmful.)
 \item Via \flaw{}-distribution we have
@@ -1084,6 +1131,7 @@ Caricature of quant work:
 \begin{itemize}
 \item Construct strategy with free parameters \stratrc;
 \item Backtest strategy for $\stratrc[1],\stratrc[2],\ldots,\stratrc[m]$.
+\\ Get time series of returns for each, $\vreti[1],\vreti[2],\ldots,\vreti[m]$.
 \item Pick \stratrc[i] that maximizes SR of backtest, $\stratrc[*]$.% = \mbox{argmax}_{1\le i\le m}\funcit{\ssr}{\stratrc[i]}$
 \item Profit! (or not)
 \end{itemize}
@@ -1183,6 +1231,8 @@ $$\ssr[*] = \funcit{\ssr}{\stratrc[*]} \defeq \max_{1\le i \le m} \funcit{\ssr}{
 use it to approximate maximal SR over $\mathcal{L}$.
 
 You have to estimate \nlatf, by Monte Carlo under null, PCA, or SWAG method.
+
+Gives an upper bound on \SNRfunc{\stratrc[*]}.
 \end{frame}
 %UNFOLD
 
